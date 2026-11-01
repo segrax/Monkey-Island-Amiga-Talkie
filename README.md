@@ -29,12 +29,10 @@ The finished game includes prepared speech audio, so you do not need to copy `mo
 ## Amiga compatibility
 
 - PAL Amiga with Kickstart 1.3 or later and storage for the game.
+- A 68020 or faster is recommended. A 68000 at A500 speed cannot keep up with real-time playback.
 - Fast RAM is not required.
-- An accelerator is recommended. The current version runs slowly on a stock 7 MHz 68000.
 
-Tested on a PAL A2000 with a TF536/68030, where it runs well.
-
-For emulators, use PAL, a 68030 at 50 MHz, 24-bit addressing, JIT disabled and cycle-exact timing enabled.
+Tested on a PAL A2000 with a TF536/68030, where it runs well. Also tested in an emulator with a 68020 and 1 MB Chip RAM, 1 MB Slow RAM and no Fast RAM. At A500 speed, some scenes slow down; A1200 speed or faster is recommended.
 
 ## Development and credits
 

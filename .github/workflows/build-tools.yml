@@ -1,0 +1,74 @@
+name: Build tools
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Main commit or tag to build
+        required: true
+        type: string
+    outputs:
+      commit:
+        description: Verified commit built by both platforms
+        value: ${{ jobs.verify-main.outputs.commit }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify-main:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      commit: ${{ steps.verify.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify commit belongs to main
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          commit=$(git rev-parse HEAD)
+          if ! git merge-base --is-ancestor "$commit" origin/main; then
+            echo '::error::Only commits in main can be built or released.'
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: verify-main
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x64
+            os: windows-2022
+          - platform: linux-x64
+            os: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verify-main.outputs.commit }}
+          persist-credentials: false
+      - name: Configure
+        run: cmake -S source -B build/ci -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Build
+        run: cmake --build build/ci --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build/ci -C Release --output-on-failure
+      - name: Stage executable
+        run: cmake --install build/ci --config Release --prefix dist
+      - name: Upload executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.platform }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

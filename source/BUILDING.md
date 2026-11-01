@@ -41,6 +41,21 @@ cmake --build build/local --config Release --parallel
 ctest --test-dir build/local -C Release --output-on-failure
 ```
 
+## GitHub Actions
+
+Pushes to `main` build and test the Windows x64 and Linux x64 tools, then upload the executables as workflow artifacts. The Build workflow can also be run manually from `main`; other branches are skipped.
+
+Pushing a tag creates a GitHub release with both freshly built executables and `SHA256SUMS`. The tagged commit must be in `main`'s history; tags on other branches are rejected before compilation. Release publishing waits for both platforms to build and pass CTest. For example, after committing and pushing your changes to `main`:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflows share `build-tools.yml` for the main-commit check, CMake builds, tests and artifacts. They build the desktop tools using the embedded Amiga runtime assets; they do not rebuild the native Amiga components.
+
+## Verification
+
 Run `--help` or `--verify-payload` on either executable. Automated game builds accept `--amiga <folder> --sou <monster.sou> --engine <original-executable-or-disk1.adf> --output <new-folder>`.
 
 `tests/Smoke.ps1` and `tests/smoke.sh` exercise full builds and rejection paths with your owned inputs. See [VALIDATION.md](VALIDATION.md) for the bounded validation performed. The `--self-test` command checks embedded data and format vectors without game files.

@@ -45,7 +45,7 @@ int run(const std::vector<std::string> &args) {
                          "disk1.adf> --output <new-folder>\n"
                          "--verify-payload   Verify embedded patch and runtime "
                          "hashes.\n--self-test        Verify embedded data and binary format test "
-                         "vectors.\n\nNo downloads, Python or .NET are used.\n";
+                         "vectors.\n";
             return 0;
         }
         verify_payload();

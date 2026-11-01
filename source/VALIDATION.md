@@ -1,5 +1,9 @@
 # Validation
 
+## 68020 at A500 speed
+
+Playback testing on 2 November 2026 confirmed that an emulated 68020 runs with 1 MB Chip RAM, 1 MB Slow RAM and no Fast RAM. Further testing found slowdowns in some scenes at A500 speed, so the README recommends A1200 speed or faster. A 68000 at A500 speed cannot keep up. These are emulator settings; they do not establish equivalent performance for every physical 68020 system.
+
 ## Kickstart 3 music timer ownership
 
 Reproduced repeating music in the opening conversation with PAL 68020 timing at 7,093,790 and 14,187,580 Hz, cycle-exact disabled, 1 MB Chip, no Fast RAM and 1 MB Slow RAM, using Kickstart 3.1 rev 40.63. A matching Kickstart 1.3 run continued to advance the music. Speech buffers continued without underruns or late buffers in the failing 3.1 runs.
