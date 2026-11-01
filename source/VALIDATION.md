@@ -1,5 +1,19 @@
 # Validation
 
+## Hybrid render optimization
+
+The mixer now snapshots speech state per buffer, uses two explicit music-channel snapshots instead of indexing an array per sample, and zeroes silent output buffers through the existing assembly helper. Zero-volume DMA continues to advance and generate events in the live timeline. No speech samples, output rate, music gain or channel routing were changed.
+
+Compiled 68000 differential tests compare both output buffers, speech state/cursors, live virtual-channel state and hardware register state against the pre-optimization hybrid across 128 deterministic cases. They include ring wrap, cancellation, short/empty tails, EOF/starvation, muted channels, variable pitch/length and gain limits. The existing hybrid and both clock-backend tests pass.
+
+With mocked clock/OS calls, a silent IRQ fell from 25,063 to 669 instructions. Separate representative measurements were 41,235 to 15,119 for music, 33,800 to 9,720 for speech, and 49,972 to 18,242 for music plus speech. These are instruction counts, not measured 68000 cycle budgets or a guarantee of stock A500 performance.
+
+FS-UAE 3.1.66 with a 68030, configured 50 MHz, CPU/memory/blitter cycle-exact options enabled, JIT off, PAL, 1 MB Chip and 8 MB Fast RAM (no Slow RAM or second Fast block) reached the opening conversation under Kickstart 1.3. File-only captured audio contains the opening recording with correlation 0.612 at 153.158 seconds. This establishes progress and speech output in that configuration; it does not prove perfect audio or reproduce TF536 timing exactly. Earlier cycle-exact 68000 runs with the inherited Slow/second-Fast memory configuration did not pass (blank/yellow displays); the specific cause is unresolved and those attempts are not counted as compatibility passes.
+
+The same 68030 cycle-exact configuration also reached the opening conversation under Kickstart 2.04 rev 37.175; captured opening speech correlation was 0.472 at 142.072 seconds. These captures establish recognizable output, not an audio-quality certification. Both test sessions were stopped after conversation progress was observed, with no full playthrough performed.
+
+Both desktop builders embed the updated matched engine/loader/manifest. Standalone standard-profile generation and invalid-input checks passed on Windows and Linux after refreshing the payload.
+
 ## Kickstart 1.3 clock fix
 
 The hybrid clock previously returned failure on Exec versions below V36, preventing the audio driver from starting. The new 1.3 backend allocates a free CIA timer through `cia.resource`, extends its counter using overflow interrupts, and releases it on shutdown. The V36+ `ReadEClock` path is retained.

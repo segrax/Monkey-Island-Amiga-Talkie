@@ -97,43 +97,57 @@ void nv_driver_clear_native_volume(NvU32 c) { if(c<4)nv_driver_volume(AUD+16*c,0
 void nv_driver_clear_volume(void) { nv_driver_clear_native_volume(0); }
 
 /* Render snapshots only. Live native clocks/events advance exclusively with
- * ReadEClock; rendering ahead must never advance the song a second time. */
+ * the native clock; rendering ahead must never advance the song twice. */
+/* Advance only the render snapshot. Live music phase is maintained by advance(). */
+#define MUSIC_SAMPLE(p, table, value) do { \
+ (value)=(table)[*(volatile NvU8 *)((p).active_address+(p).index)]; \
+ (p).elapsed+=period; \
+ while((p).elapsed>=(p).latched_period) { \
+  (p).elapsed-=(p).latched_period;(p).latched_period=(p).period; \
+  if(++(p).index==(p).active_bytes) { \
+   (p).active_address=(p).reload_address;(p).active_bytes=(p).reload_bytes;(p).index=0; \
+  } \
+ } \
+} while(0)
+extern void nv_zero_output(NvS8 *,NvU16);
 static void render(unsigned buffer,NvU32 ahead) {
- struct NvPaula p[2];struct NativeVoice *v=nv_control.voice;
+ struct NvPaula p0,p1;struct NativeVoice *v=nv_control.voice;
  struct NvMixer *tail=&nv_driver.tail;
- NvU16 i,c,serial=nv_driver.next_serial++,consumed=0,starved=0;
+ NvU16 i,serial=nv_driver.next_serial++,available=0,read=v->read_cursor;
+ NvU16 period=v->output_period,mask=v->capacity-1;
  NvU32 started=nv_clock_now(),elapsed;
- int sound[2],speech,left,right,gain=v->speech_gain>64?64:v->speech_gain;
+ NvS8 *left=nv_driver.buffers[buffer],*right=nv_driver.right[buffer];
+ const NvS8 *table0,*table1,*speech_table=amplitude[v->speech_gain>64?64:v->speech_gain];
+ int active0,active1,voice_active,sound0,sound1,speech;
  nv_driver.serials[buffer]=serial;
- for(c=0;c<VIRTUAL_CHANNELS;++c){p[c]=nv_driver.native[c];nv_paula_advance(&p[c],ahead);}
  if(tail->generation!=v->generation){tail->generation=v->generation;tail->tail_valid=0;}
  if(v->generation && v->cancel_generation==v->generation){v->read_cursor=v->write_cursor;v->state=NATIVE_VOICE_CANCELLED;}
- for(i=0;i<CHUNK;++i) {
-  for(c=0;c<VIRTUAL_CHANNELS;++c) {
-   sound[c]=p[c].dma ? amplitude[p[c].volume][*(volatile NvU8 *)(p[c].active_address+p[c].index)]:0;
-   if(p[c].dma) {
-    p[c].elapsed+=v->output_period;
-    while(p[c].elapsed>=p[c].latched_period) {
-     p[c].elapsed-=p[c].latched_period;p[c].latched_period=p[c].period;
-     if(++p[c].index==p[c].active_bytes){p[c].active_address=p[c].reload_address;
-      p[c].active_bytes=p[c].reload_bytes;p[c].index=0;}
-    }
-   }
+ voice_active=v->generation && (v->state==NATIVE_VOICE_READY||v->state==NATIVE_VOICE_PLAYING);
+ if(voice_active){available=(NvU16)(v->write_cursor-read);if(available>CHUNK)available=CHUNK;}
+ active0=nv_driver.native[0].dma && nv_driver.native[0].volume;
+ active1=nv_driver.native[1].dma && nv_driver.native[1].volume;
+ if(!active0 && !active1 && !available) {
+  /* No audible samples: avoid 256 iterations of the full mixing loop.
+   * Zero-volume DMA still advances and generates events in advance(). */
+  nv_zero_output(left,CHUNK);nv_zero_output(right,CHUNK);
+ } else {
+  p0=nv_driver.native[0];p1=nv_driver.native[1];
+  if(active0)nv_paula_advance(&p0,ahead);
+  if(active1)nv_paula_advance(&p1,ahead);
+  table0=amplitude[p0.volume];table1=amplitude[p1.volume];
+  /* Interrupts hold the producer task off: snapshot speech state once and
+   * publish its read cursor after rendering rather than on every sample. */
+  for(i=0;i<CHUNK;++i) {
+   sound0=sound1=speech=0;
+   if(active0)MUSIC_SAMPLE(p0,table0,sound0);
+   if(active1)MUSIC_SAMPLE(p1,table1,sound1);
+   if(i<available)speech=speech_table[(NvU8)v->pcm[read++ & mask]];
+   left[i]=(NvS8)((sound0+speech)>>1);right[i]=(NvS8)((sound1+speech)>>1);
   }
-  speech=0;
-  if(v->generation && (v->state==NATIVE_VOICE_READY||v->state==NATIVE_VOICE_PLAYING)) {
-   if(v->read_cursor!=v->write_cursor){speech=amplitude[gain][(NvU8)v->pcm[v->read_cursor&(v->capacity-1)]];
-    ++v->read_cursor;v->state=NATIVE_VOICE_PLAYING;consumed=1;
-   } else if(!v->eof)starved=1;
-  }
-  /* Channels 2 (right) and 3 (left) stay on Paula, at fixed half gain.
-   * Only native0/1 and speech require CPU sample mixing. */
-  left=(sound[0]+speech)>>1;right=(sound[1]+speech)>>1;
-  nv_driver.buffers[buffer][i]=(NvS8)left;nv_driver.right[buffer][i]=(NvS8)right;
  }
  nv_driver.frames_produced+=CHUNK;
- if(consumed){tail->tail_serial=serial;tail->tail_valid=1;}
- if(starved)++v->underruns;
+ if(available){v->read_cursor=read;v->state=NATIVE_VOICE_PLAYING;tail->tail_serial=serial;tail->tail_valid=1;}
+ if(voice_active && available<CHUNK && !v->eof)++v->underruns;
  if(v->generation && (v->state==NATIVE_VOICE_READY||v->state==NATIVE_VOICE_PLAYING) && v->eof && v->read_cursor==v->write_cursor) {
   v->rendered_generation=v->generation;v->state=NATIVE_VOICE_DRAINING;
   if(!tail->tail_valid){tail->tail_valid=1;tail->tail_serial=(NvU16)(serial-1);}
@@ -145,6 +159,8 @@ static void render(unsigned buffer,NvU32 ahead) {
  if(elapsed>nv_driver.max_render_ticks)nv_driver.max_render_ticks=elapsed;
  if(elapsed*5 >= (NvU32)CHUNK*v->output_period)++nv_driver.late_buffers;
 }
+#undef MUSIC_SAMPLE
+
 static void program(unsigned buffer) {
  NvU16 volume=nv_driver.first_irq?0:64;
  L(AUD)=(NvU32)nv_driver.buffers[buffer];L(AUD+16)=(NvU32)nv_driver.right[buffer];

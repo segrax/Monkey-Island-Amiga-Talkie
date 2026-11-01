@@ -1,6 +1,6 @@
 {
   "original_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
-  "sha256": "2e1a796408c4642d74e76c3f498078ea2ac057e6611c2077b140e704cfb41a6f",
+  "sha256": "5c559be247c96c6793d785d65a3787e841401e92561bc6bd44e78cb0e11c0d0c",
   "exports": {
     "_nv_native_write_ea0": {
       "hunk": 3,
@@ -452,7 +452,7 @@
     },
     "_nv_driver_end": {
       "hunk": 4,
-      "offset": 6720
+      "offset": 6844
     },
     "_nv_driver_write": {
       "hunk": 4,
@@ -472,19 +472,19 @@
     },
     "_nv_driver_service": {
       "hunk": 4,
-      "offset": 4632
+      "offset": 4756
     },
     "_nv_driver_install": {
       "hunk": 4,
-      "offset": 4700
+      "offset": 4824
     },
     "_nv_driver_intena": {
       "hunk": 4,
-      "offset": 6320
+      "offset": 6444
     },
     "_nv_driver_irq": {
       "hunk": 4,
-      "offset": 6444
+      "offset": 6568
     },
     "_nv_game_skip_script": {
       "hunk": 4,
@@ -492,187 +492,187 @@
     },
     "_nv_driver_start": {
       "hunk": 4,
-      "offset": 4744
+      "offset": 4868
     },
     "_nv_driver_layout": {
       "hunk": 4,
-      "offset": 6972
+      "offset": 7096
     },
     "_nv_driver_restore": {
       "hunk": 4,
-      "offset": 6428
+      "offset": 6552
     },
     "_nv_driver_control": {
       "hunk": 4,
-      "offset": 5516
+      "offset": 5640
     },
     "_nv_game_site": {
       "hunk": 4,
-      "offset": 7320
+      "offset": 7444
     },
     "_nv_dialogue_stop": {
       "hunk": 4,
-      "offset": 8300
+      "offset": 8424
     },
     "_nv_dialogue_segment": {
       "hunk": 4,
-      "offset": 7832
+      "offset": 7956
     },
     "_nv_dialogue_capture": {
       "hunk": 4,
-      "offset": 7616
+      "offset": 7740
     },
     "_nv_dialogue_display": {
       "hunk": 4,
-      "offset": 8192
+      "offset": 8316
     },
     "_nv_dialogue_program": {
       "hunk": 4,
-      "offset": 7452
+      "offset": 7576
     },
     "_nv_resource_end": {
       "hunk": 4,
-      "offset": 9324
+      "offset": 9448
     },
     "_nv_resource_mutate": {
       "hunk": 4,
-      "offset": 9568
+      "offset": 9692
     },
     "_nv_resource_begin": {
       "hunk": 4,
-      "offset": 8984
+      "offset": 9108
     },
     "_nv_conversion_begin": {
       "hunk": 4,
-      "offset": 9600
+      "offset": 9724
     },
     "_nv_resource_clear": {
       "hunk": 4,
-      "offset": 9508
+      "offset": 9632
     },
     "_nv_provenance_clear": {
       "hunk": 4,
-      "offset": 12096
+      "offset": 12220
     },
     "_nv_provenance_reset": {
       "hunk": 4,
-      "offset": 8648
+      "offset": 8772
     },
     "_nv_conversion_end": {
       "hunk": 4,
-      "offset": 9844
+      "offset": 9968
     },
     "_nv_provenance_export": {
       "hunk": 4,
-      "offset": 12240
+      "offset": 12364
     },
     "_nv_provenance_import": {
       "hunk": 4,
-      "offset": 12832
+      "offset": 12956
     },
     "_nv_provenance_program": {
       "hunk": 4,
-      "offset": 8676
+      "offset": 8800
     },
     "_nv_definition_begin": {
       "hunk": 4,
-      "offset": 8816
+      "offset": 8940
     },
     "_nv_provenance_origin": {
       "hunk": 4,
-      "offset": 10704
+      "offset": 10828
     },
     "_nv_metadata_export": {
       "hunk": 4,
-      "offset": 14236
+      "offset": 14360
     },
     "_nv_metadata_import": {
       "hunk": 4,
-      "offset": 14304
+      "offset": 14428
     },
     "_nv_metadata_save": {
       "hunk": 4,
-      "offset": 14444
+      "offset": 14568
     },
     "_nv_metadata_load_begin": {
       "hunk": 4,
-      "offset": 14568
+      "offset": 14692
     },
     "_nv_metadata_clear": {
       "hunk": 4,
-      "offset": 14416
+      "offset": 14540
     },
     "_nv_metadata_load": {
       "hunk": 4,
-      "offset": 14596
+      "offset": 14720
     },
     "_nv_game_metadata_commit": {
       "hunk": 4,
-      "offset": 16968
+      "offset": 17092
     },
     "_nv_game_active": {
       "hunk": 4,
-      "offset": 15600
+      "offset": 15724
     },
     "_nv_game_metadata_save": {
       "hunk": 4,
-      "offset": 16824
+      "offset": 16948
     },
     "_nv_game_set_policy": {
       "hunk": 4,
-      "offset": 14768
+      "offset": 14892
     },
     "_nv_game_play": {
       "hunk": 4,
-      "offset": 15720
+      "offset": 15844
     },
     "_nv_game_poll": {
       "hunk": 4,
-      "offset": 15352
+      "offset": 15476
     },
     "_nv_game_metadata_load": {
       "hunk": 4,
-      "offset": 16864
+      "offset": 16988
     },
     "_nv_game_cancel": {
       "hunk": 4,
-      "offset": 15928
+      "offset": 16052
     },
     "_nv_game_program": {
       "hunk": 4,
-      "offset": 14840
+      "offset": 14964
     },
     "_nv_game_shutdown": {
       "hunk": 4,
-      "offset": 15964
+      "offset": 16088
     },
     "_nv_policy_enter": {
       "hunk": 4,
-      "offset": 18452
+      "offset": 18576
     },
     "_nv_policy_init": {
       "hunk": 4,
-      "offset": 17548
+      "offset": 17672
     },
     "_nv_policy_collect": {
       "hunk": 4,
-      "offset": 17620
+      "offset": 17744
     },
     "_nv_policy_selector_valid": {
       "hunk": 4,
-      "offset": 18860
+      "offset": 18984
     },
     "_nv_clock_start": {
       "hunk": 4,
-      "offset": 19784
+      "offset": 19908
     },
     "_nv_clock_stop": {
       "hunk": 4,
-      "offset": 20108
+      "offset": 20232
     },
     "_nv_clock_now": {
       "hunk": 4,
-      "offset": 20052
+      "offset": 20176
     },
     "_nv_control": {
       "hunk": 5,
@@ -1256,7 +1256,7 @@
     "max_render_ticks": 268,
     "late_buffers": 272
   },
-  "source_module_sha256": "de130f19fec3e71f82d48a10d31b9eb78ca1a7bae51f75d12c06621a4642d410",
+  "source_module_sha256": "606d9452b4e7f16291ab2e403c25357f053cb2ff96f6e3417b65a59907565c01",
   "original_relocations_outside_engine_patch_footprints_retained": true,
   "engine_removed_original_relocations": [
     {
@@ -1323,7 +1323,7 @@
     "runtime_validation": false
   },
   "engine_stripe_relax": {
-    "source_module_sha256": "3e745dc522f1d54711930256503df69e20fb6d87ad130bc3dfb54baeac6016c4",
+    "source_module_sha256": "3f016c9b6656a42aa022a1b0ecfdee592bd423ecfd503afc6b55652d55620457",
     "kernel_hunk": 9,
     "kernel_bytes": 376,
     "kernel_sha256": "d727ef0d71fc58eb39c2a1b1f250ba5dee546e9412b617cd7f7dd703c2a5c45b",
