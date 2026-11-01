@@ -1,6 +1,6 @@
 {
   "original_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
-  "sha256": "5c559be247c96c6793d785d65a3787e841401e92561bc6bd44e78cb0e11c0d0c",
+  "sha256": "88891edba0aa7b8052c37bcac2f9ed47c976d56828e7c694cab0322d531c8405",
   "exports": {
     "_nv_native_write_ea0": {
       "hunk": 3,
@@ -398,6 +398,18 @@
       "hunk": 3,
       "offset": 5496
     },
+    "_nv_hybrid_speech": {
+      "hunk": 3,
+      "offset": 5628
+    },
+    "_nv_hybrid_half": {
+      "hunk": 3,
+      "offset": 5696
+    },
+    "_nv_hybrid_channel": {
+      "hunk": 3,
+      "offset": 5532
+    },
     "_nv_paula_pointer": {
       "hunk": 4,
       "offset": 184
@@ -452,7 +464,7 @@
     },
     "_nv_driver_end": {
       "hunk": 4,
-      "offset": 6844
+      "offset": 6788
     },
     "_nv_driver_write": {
       "hunk": 4,
@@ -472,19 +484,19 @@
     },
     "_nv_driver_service": {
       "hunk": 4,
-      "offset": 4756
+      "offset": 4700
     },
     "_nv_driver_install": {
       "hunk": 4,
-      "offset": 4824
+      "offset": 4768
     },
     "_nv_driver_intena": {
       "hunk": 4,
-      "offset": 6444
+      "offset": 6388
     },
     "_nv_driver_irq": {
       "hunk": 4,
-      "offset": 6568
+      "offset": 6512
     },
     "_nv_game_skip_script": {
       "hunk": 4,
@@ -492,187 +504,187 @@
     },
     "_nv_driver_start": {
       "hunk": 4,
-      "offset": 4868
+      "offset": 4812
     },
     "_nv_driver_layout": {
       "hunk": 4,
-      "offset": 7096
+      "offset": 7040
     },
     "_nv_driver_restore": {
       "hunk": 4,
-      "offset": 6552
+      "offset": 6496
     },
     "_nv_driver_control": {
       "hunk": 4,
-      "offset": 5640
+      "offset": 5584
     },
     "_nv_game_site": {
       "hunk": 4,
-      "offset": 7444
+      "offset": 7388
     },
     "_nv_dialogue_stop": {
       "hunk": 4,
-      "offset": 8424
+      "offset": 8368
     },
     "_nv_dialogue_segment": {
       "hunk": 4,
-      "offset": 7956
+      "offset": 7900
     },
     "_nv_dialogue_capture": {
       "hunk": 4,
-      "offset": 7740
+      "offset": 7684
     },
     "_nv_dialogue_display": {
       "hunk": 4,
-      "offset": 8316
+      "offset": 8260
     },
     "_nv_dialogue_program": {
       "hunk": 4,
-      "offset": 7576
+      "offset": 7520
     },
     "_nv_resource_end": {
       "hunk": 4,
-      "offset": 9448
+      "offset": 9392
     },
     "_nv_resource_mutate": {
       "hunk": 4,
-      "offset": 9692
+      "offset": 9636
     },
     "_nv_resource_begin": {
       "hunk": 4,
-      "offset": 9108
+      "offset": 9052
     },
     "_nv_conversion_begin": {
       "hunk": 4,
-      "offset": 9724
+      "offset": 9668
     },
     "_nv_resource_clear": {
       "hunk": 4,
-      "offset": 9632
+      "offset": 9576
     },
     "_nv_provenance_clear": {
       "hunk": 4,
-      "offset": 12220
+      "offset": 12164
     },
     "_nv_provenance_reset": {
       "hunk": 4,
-      "offset": 8772
+      "offset": 8716
     },
     "_nv_conversion_end": {
       "hunk": 4,
-      "offset": 9968
+      "offset": 9912
     },
     "_nv_provenance_export": {
       "hunk": 4,
-      "offset": 12364
+      "offset": 12308
     },
     "_nv_provenance_import": {
       "hunk": 4,
-      "offset": 12956
+      "offset": 12900
     },
     "_nv_provenance_program": {
       "hunk": 4,
-      "offset": 8800
+      "offset": 8744
     },
     "_nv_definition_begin": {
       "hunk": 4,
-      "offset": 8940
+      "offset": 8884
     },
     "_nv_provenance_origin": {
       "hunk": 4,
-      "offset": 10828
+      "offset": 10772
     },
     "_nv_metadata_export": {
       "hunk": 4,
-      "offset": 14360
+      "offset": 14304
     },
     "_nv_metadata_import": {
       "hunk": 4,
-      "offset": 14428
+      "offset": 14372
     },
     "_nv_metadata_save": {
       "hunk": 4,
-      "offset": 14568
+      "offset": 14512
     },
     "_nv_metadata_load_begin": {
       "hunk": 4,
-      "offset": 14692
+      "offset": 14636
     },
     "_nv_metadata_clear": {
       "hunk": 4,
-      "offset": 14540
+      "offset": 14484
     },
     "_nv_metadata_load": {
       "hunk": 4,
-      "offset": 14720
+      "offset": 14664
     },
     "_nv_game_metadata_commit": {
       "hunk": 4,
-      "offset": 17092
+      "offset": 17036
     },
     "_nv_game_active": {
       "hunk": 4,
-      "offset": 15724
+      "offset": 15668
     },
     "_nv_game_metadata_save": {
       "hunk": 4,
-      "offset": 16948
+      "offset": 16892
     },
     "_nv_game_set_policy": {
       "hunk": 4,
-      "offset": 14892
+      "offset": 14836
     },
     "_nv_game_play": {
       "hunk": 4,
-      "offset": 15844
+      "offset": 15788
     },
     "_nv_game_poll": {
       "hunk": 4,
-      "offset": 15476
+      "offset": 15420
     },
     "_nv_game_metadata_load": {
       "hunk": 4,
-      "offset": 16988
+      "offset": 16932
     },
     "_nv_game_cancel": {
       "hunk": 4,
-      "offset": 16052
+      "offset": 15996
     },
     "_nv_game_program": {
       "hunk": 4,
-      "offset": 14964
+      "offset": 14908
     },
     "_nv_game_shutdown": {
       "hunk": 4,
-      "offset": 16088
+      "offset": 16032
     },
     "_nv_policy_enter": {
       "hunk": 4,
-      "offset": 18576
+      "offset": 18520
     },
     "_nv_policy_init": {
       "hunk": 4,
-      "offset": 17672
+      "offset": 17616
     },
     "_nv_policy_collect": {
       "hunk": 4,
-      "offset": 17744
+      "offset": 17688
     },
     "_nv_policy_selector_valid": {
       "hunk": 4,
-      "offset": 18984
+      "offset": 18928
     },
     "_nv_clock_start": {
       "hunk": 4,
-      "offset": 19908
+      "offset": 19852
     },
     "_nv_clock_stop": {
       "hunk": 4,
-      "offset": 20232
+      "offset": 20176
     },
     "_nv_clock_now": {
       "hunk": 4,
-      "offset": 20176
+      "offset": 20120
     },
     "_nv_control": {
       "hunk": 5,
@@ -1256,7 +1268,7 @@
     "max_render_ticks": 268,
     "late_buffers": 272
   },
-  "source_module_sha256": "606d9452b4e7f16291ab2e403c25357f053cb2ff96f6e3417b65a59907565c01",
+  "source_module_sha256": "459ea6596885bf75fa0c90fe33f44c9b4229af7784540b85e7a864538b3afd7f",
   "original_relocations_outside_engine_patch_footprints_retained": true,
   "engine_removed_original_relocations": [
     {
@@ -1323,7 +1335,7 @@
     "runtime_validation": false
   },
   "engine_stripe_relax": {
-    "source_module_sha256": "3f016c9b6656a42aa022a1b0ecfdee592bd423ecfd503afc6b55652d55620457",
+    "source_module_sha256": "ca2092391fab7c186860087c674f12a74fb8ccc62fe51f1de2935ba8898e9cec",
     "kernel_hunk": 9,
     "kernel_bytes": 376,
     "kernel_sha256": "d727ef0d71fc58eb39c2a1b1f250ba5dee546e9412b617cd7f7dd703c2a5c45b",

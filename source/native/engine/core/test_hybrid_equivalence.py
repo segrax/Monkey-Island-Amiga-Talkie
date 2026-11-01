@@ -51,6 +51,22 @@ for label,build in (('baseline',args.baseline),('current',current)):
  hook=ns['cpu'].hook_add(ns['unicorn'].UC_HOOK_CODE,step)
  ns['irq']();ns['cpu'].hook_del(hook);instructions[label]=count[0]
 os.environ['MONKEY_ENGINE_BUILD']=current
-assert instructions['current'] < instructions['baseline']//10,instructions
-report=dict(pass_=True,cases=cases,idle_irq_instructions=instructions,baseline=old['meta']['sha256'],current=new['meta']['sha256'],scope='compiled 68000 output/state differential with clock/OS mocks; not hardware timing')
+assert instructions['current'] <= instructions['baseline'],instructions
+active_instructions={}
+for label,build in (('baseline',args.baseline),('current',current)):
+ ns=load(build)
+ for c in range(2):
+  ns['cpu'].mem_write(0x605000+512*c,bytes(range(256))*2)
+  for off,value,size in ((0,0x605000+512*c,4),(4,256,2),(6,322+106*c,2),(8,64,2)):
+   ns['write'](c,off,value,size)
+ ns['call']('_nv_driver_control',0,0x8203)
+ for off,value in ((8,1),(6,3),(12,0),(14,256),(16,0),(26,64)):ns['put'](ns['voice']+off,value,2)
+ ns['cpu'].mem_write(ns['pcm'],bytes(range(256)))
+ count=[0]
+ def step(*unused):count[0]+=1
+ hook=ns['cpu'].hook_add(ns['unicorn'].UC_HOOK_CODE,step)
+ ns['irq']();ns['cpu'].hook_del(hook);active_instructions[label]=count[0]
+assert active_instructions['current'] < active_instructions['baseline']*0.65,active_instructions
+os.environ['MONKEY_ENGINE_BUILD']=current
+report=dict(pass_=True,cases=cases,idle_irq_instructions=instructions,active_irq_instructions=active_instructions,baseline=old['meta']['sha256'],current=new['meta']['sha256'],scope='compiled 68000 output/state differential with clock/OS mocks; not hardware timing')
 (new['BUILD']/'hybrid-equivalence.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

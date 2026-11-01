@@ -289,8 +289,10 @@ def main():
     run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O2','-cpu=68000',
          HERE/'native_clock.c','-o','native_clock.o'])
     run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','native_divmod.o',HERE/'native_divmod.s'])
+    if HYBRID_MIX:
+        run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','hybrid_samples.o',HERE/'hybrid_samples.s'])
     run([TOOLS/'bin/vlink.exe','-bamigahunk','-Z','-Bstatic','-Cvbcc','-nostdlib','-Mmodule.map',
-         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','native_policy.o','native_clock.o','native_divmod.o'])
+         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','native_policy.o','native_clock.o','native_divmod.o']+(['hybrid_samples.o'] if HYBRID_MIX else []))
     append_module()
 
 def pack(*values):

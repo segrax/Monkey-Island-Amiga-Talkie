@@ -98,18 +98,15 @@ void nv_driver_clear_volume(void) { nv_driver_clear_native_volume(0); }
 
 /* Render snapshots only. Live native clocks/events advance exclusively with
  * the native clock; rendering ahead must never advance the song twice. */
-/* Advance only the render snapshot. Live music phase is maintained by advance(). */
-#define MUSIC_SAMPLE(p, table, value) do { \
- (value)=(table)[*(volatile NvU8 *)((p).active_address+(p).index)]; \
- (p).elapsed+=period; \
- while((p).elapsed>=(p).latched_period) { \
-  (p).elapsed-=(p).latched_period;(p).latched_period=(p).period; \
-  if(++(p).index==(p).active_bytes) { \
-   (p).active_address=(p).reload_address;(p).active_bytes=(p).reload_bytes;(p).index=0; \
-  } \
- } \
-} while(0)
 extern void nv_zero_output(NvS8 *,NvU16);
+extern void nv_hybrid_channel(const struct NvPaula *,const NvS8 *,NvU32,NvS8 *);
+extern void nv_hybrid_speech(NvS8 *,NvS8 *,const NvS8 *,const NvS8 *,NvU32);
+extern void nv_hybrid_half(NvS8 *,NvS8 *,NvU32);
+typedef char HybridPaulaLayout[(offsetof(struct NvPaula,reload_address)==0 &&
+ offsetof(struct NvPaula,reload_bytes)==4 && offsetof(struct NvPaula,active_address)==8 &&
+ offsetof(struct NvPaula,active_bytes)==12 && offsetof(struct NvPaula,index)==16 &&
+ offsetof(struct NvPaula,elapsed)==20 && offsetof(struct NvPaula,period)==24 &&
+ offsetof(struct NvPaula,latched_period)==28)?1:-1];
 static void render(unsigned buffer,NvU32 ahead) {
  struct NvPaula p0,p1;struct NativeVoice *v=nv_control.voice;
  struct NvMixer *tail=&nv_driver.tail;
@@ -118,7 +115,7 @@ static void render(unsigned buffer,NvU32 ahead) {
  NvU32 started=nv_clock_now(),elapsed;
  NvS8 *left=nv_driver.buffers[buffer],*right=nv_driver.right[buffer];
  const NvS8 *table0,*table1,*speech_table=amplitude[v->speech_gain>64?64:v->speech_gain];
- int active0,active1,voice_active,sound0,sound1,speech;
+ int active0,active1,voice_active;
  nv_driver.serials[buffer]=serial;
  if(tail->generation!=v->generation){tail->generation=v->generation;tail->tail_valid=0;}
  if(v->generation && v->cancel_generation==v->generation){v->read_cursor=v->write_cursor;v->state=NATIVE_VOICE_CANCELLED;}
@@ -135,15 +132,18 @@ static void render(unsigned buffer,NvU32 ahead) {
   if(active0)nv_paula_advance(&p0,ahead);
   if(active1)nv_paula_advance(&p1,ahead);
   table0=amplitude[p0.volume];table1=amplitude[p1.volume];
-  /* Interrupts hold the producer task off: snapshot speech state once and
-   * publish its read cursor after rendering rather than on every sample. */
-  for(i=0;i<CHUNK;++i) {
-   sound0=sound1=speech=0;
-   if(active0)MUSIC_SAMPLE(p0,table0,sound0);
-   if(active1)MUSIC_SAMPLE(p1,table1,sound1);
-   if(i<available)speech=speech_table[(NvU8)v->pcm[read++ & mask]];
-   left[i]=(NvS8)((sound0+speech)>>1);right[i]=(NvS8)((sound1+speech)>>1);
+  /* Render only local snapshots. The assembly loops keep sample cursors and
+   * phase in registers; no change to live music timing or signed rounding. */
+  if(active0)nv_hybrid_channel(&p0,table0,period,left);else nv_zero_output(left,CHUNK);
+  if(active1)nv_hybrid_channel(&p1,table1,period,right);else nv_zero_output(right,CHUNK);
+  i=0;
+  while(i<available) {
+   NvU16 count=available-i,position=read&mask;
+   if(count>v->capacity-position)count=v->capacity-position;
+   nv_hybrid_speech(left+i,right+i,v->pcm+position,speech_table,count);
+   read+=count;i+=count;
   }
+  nv_hybrid_half(left+i,right+i,CHUNK-i);
  }
  nv_driver.frames_produced+=CHUNK;
  if(available){v->read_cursor=read;v->state=NATIVE_VOICE_PLAYING;tail->tail_serial=serial;tail->tail_valid=1;}
@@ -159,7 +159,6 @@ static void render(unsigned buffer,NvU32 ahead) {
  if(elapsed>nv_driver.max_render_ticks)nv_driver.max_render_ticks=elapsed;
  if(elapsed*5 >= (NvU32)CHUNK*v->output_period)++nv_driver.late_buffers;
 }
-#undef MUSIC_SAMPLE
 
 static void program(unsigned buffer) {
  NvU16 volume=nv_driver.first_irq?0:64;
