@@ -24,6 +24,8 @@ The standard SOU lacks the 16 supplemental recordings used by the expanded devel
 
 The Amiga output uses prepared audio; it does not need `monster.sou` copied across. Keep its files together. The supplied `Play` script includes the temporary pirate-screen bypass used during development.
 
+For emulator testing, the verified FS-UAE profile is PAL, 68030 at 50 MHz, 24-bit addressing, 1 MB Chip and 8 MB Fast RAM, JIT off, and CPU/memory/blitter cycle-exact options on. Selecting a CPU model alone does not select its clock speed. The same current build stalled with 32-bit addressing in the controlled FS-UAE comparison; use the tested 24-bit compatibility profile when reproducing results. This is not an exact TF536 timing model. See [validation](source/VALIDATION.md).
+
 ## Source and credits
 
 Everything needed for development is in [source](source/BUILDING.md), including CMake build instructions, native Amiga code, tests and third-party notices. The Windows/Linux builders produce matching game files from the same inputs.

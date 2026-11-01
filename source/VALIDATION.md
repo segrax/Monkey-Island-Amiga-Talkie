@@ -1,5 +1,13 @@
 # Validation
 
+## Controlled startup configuration check
+
+The normal local launcher still selected the older dedicated-channel package while its hybrid alternative selected the current hybrid and different CPU timing. The local launchers now select the same matched current package, use an explicit PAL 68030/50 MHz profile with 24-bit addressing, JIT off, cycle-exact CPU/memory/blitter options, 1 MB Chip and 8 MB Fast RAM, and preserve existing saves. Amiga startup scripts are normalized to LF for 1.3. The launcher's read-only hash checks tolerate an emulator holding a shared file handle. Generated configurations and both entry points are checked for identical guest settings, unique options and the expected runtime folder.
+
+In FS-UAE 3.1.66, current engine `5c559be247c96c6793d785d65a3787e841401e92561bc6bd44e78cb0e11c0d0c` stalled with 32-bit addressing under Kickstart 2.04. Changing only the addressing option to 24-bit (same CPU, ROM, code and game files) reached the title sequence and opening conversation. File-only audio matched the opening recording with correlation 0.520 at 143.255 seconds. The original user-approved hybrid was also tried under the same 32/24-bit configurations but did not progress beyond startup in the bounded runs; those baseline attempts are not passes.
+
+The current build was then checked under Kickstart 1.3 with the fixed 24-bit profile and reached opening speech (correlation 0.628 at 151.027 seconds). This establishes reproducible startup and opening speech for the stated profile. It does not establish the internal cause of the 32-bit stall, reproduce a TF536 exactly, or certify a full playthrough, all reported intermittent behavior, or stock 68000 cycle-exact playback. No additional native-code change was made for this configuration correction.
+
 ## Hybrid render optimization
 
 The mixer now snapshots speech state per buffer, uses two explicit music-channel snapshots instead of indexing an array per sample, and zeroes silent output buffers through the existing assembly helper. Zero-volume DMA continues to advance and generate events in the live timeline. No speech samples, output rate, music gain or channel routing were changed.
