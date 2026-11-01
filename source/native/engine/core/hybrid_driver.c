@@ -12,8 +12,12 @@
 #define REQ 0xdff09cUL
 #define CHUNK 256
 #define VIRTUAL_CHANNELS 2
-/* Signed amplitude lookup built before enabling audio. No per-sample divide. */
-static NvS8 amplitude[65][256];
+/* Exact tables generated at build time, stored with ordinary code rather
+ * than DMA buffers. No per-sample divide or runtime table construction. */
+extern const NvS8 nv_amplitude[65][256], nv_half_amplitude[65][256];
+extern const NvU16 nv_speech_words[65][256];
+#define amplitude nv_amplitude
+#define half_amplitude nv_half_amplitude
 extern void *nv_alloc_chip(NvU32);
 extern void nv_free_chip(void *,NvU32);
 extern void nv_signal_worker(void *,NvU32);
@@ -100,7 +104,7 @@ void nv_driver_clear_volume(void) { nv_driver_clear_native_volume(0); }
  * the native clock; rendering ahead must never advance the song twice. */
 extern void nv_zero_output(NvS8 *,NvU16);
 extern void nv_hybrid_channel(const struct NvPaula *,const NvS8 *,NvU32,NvS8 *);
-extern void nv_hybrid_speech(NvS8 *,NvS8 *,const NvS8 *,const NvS8 *,NvU32);
+extern void nv_hybrid_speech(NvS8 *,NvS8 *,const NvS8 *,const NvU16 *,NvU32);
 extern void nv_hybrid_half(NvS8 *,NvS8 *,NvU32);
 typedef char HybridPaulaLayout[(offsetof(struct NvPaula,reload_address)==0 &&
  offsetof(struct NvPaula,reload_bytes)==4 && offsetof(struct NvPaula,active_address)==8 &&
@@ -114,7 +118,8 @@ static void render(unsigned buffer,NvU32 ahead) {
  NvU16 period=v->output_period,mask=v->capacity-1;
  NvU32 started=nv_clock_now(),elapsed;
  NvS8 *left=nv_driver.buffers[buffer],*right=nv_driver.right[buffer];
- const NvS8 *table0,*table1,*speech_table=amplitude[v->speech_gain>64?64:v->speech_gain];
+ const NvS8 *table0,*table1;
+ const NvU16 *speech_table;
  int active0,active1,voice_active;
  nv_driver.serials[buffer]=serial;
  if(tail->generation!=v->generation){tail->generation=v->generation;tail->tail_valid=0;}
@@ -131,11 +136,15 @@ static void render(unsigned buffer,NvU32 ahead) {
   p0=nv_driver.native[0];p1=nv_driver.native[1];
   if(active0)nv_paula_advance(&p0,ahead);
   if(active1)nv_paula_advance(&p1,ahead);
-  table0=amplitude[p0.volume];table1=amplitude[p1.volume];
+  /* With no speech bytes, fold the final arithmetic half into the
+   * amplitude lookup. Partial speech buffers still use the exact full mix. */
+  table0=available?amplitude[p0.volume]:half_amplitude[p0.volume];
+  table1=available?amplitude[p1.volume]:half_amplitude[p1.volume];
   /* Render only local snapshots. The assembly loops keep sample cursors and
    * phase in registers; no change to live music timing or signed rounding. */
   if(active0)nv_hybrid_channel(&p0,table0,period,left);else nv_zero_output(left,CHUNK);
   if(active1)nv_hybrid_channel(&p1,table1,period,right);else nv_zero_output(right,CHUNK);
+  if(available)speech_table=nv_speech_words[v->speech_gain>64?64:v->speech_gain];
   i=0;
   while(i<available) {
    NvU16 count=available-i,position=read&mask;
@@ -143,7 +152,7 @@ static void render(unsigned buffer,NvU32 ahead) {
    nv_hybrid_speech(left+i,right+i,v->pcm+position,speech_table,count);
    read+=count;i+=count;
   }
-  nv_hybrid_half(left+i,right+i,CHUNK-i);
+  if(available)nv_hybrid_half(left+i,right+i,CHUNK-i);
  }
  nv_driver.frames_produced+=CHUNK;
  if(available){v->read_cursor=read;v->state=NATIVE_VOICE_PLAYING;tail->tail_serial=serial;tail->tail_valid=1;}
@@ -178,8 +187,7 @@ void nv_driver_install(NvU32 original_handler) {
  L(0x70)=(NvU32)nv_irq;
 }
 void nv_driver_start(void) {
- unsigned c,b,n;NvU16 prior;struct NativeVoice *v=nv_control.voice;
- for(c=0;c<=64;++c)for(n=0;n<256;++n)amplitude[c][n]=(int)(NvS8)n*c/64;
+ unsigned c,b;NvU16 prior;struct NativeVoice *v=nv_control.voice;
  SysBase=*(void **)4;nv_game_set_policy(nv_control.policy);
  if(!(nv_control.flags&NV_CONTROL_ENABLE)||(nv_control.flags&NV_CONTROL_RUNNING))return;
  if(!v||v->magic!=NATIVE_VOICE_MAGIC||v->version!=NATIVE_VOICE_VERSION||v->capacity!=NATIVE_VOICE_CAPACITY||!v->pcm||v->output_period<124)goto fail;

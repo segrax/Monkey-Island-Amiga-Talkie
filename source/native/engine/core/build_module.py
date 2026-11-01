@@ -275,6 +275,26 @@ def generate():
     (BUILD / 'wrappers.s').write_text('\n'.join(lines)+'\n')
     (BUILD / 'patches.json').write_text(json.dumps(patches,indent=2)+'\n')
 
+def generate_hybrid_tables():
+    # The existing unsigned gain counter makes negative products wrap before
+    # division; their signed-byte result equals floor(product / 64). Preserve
+    # that rounding, followed separately by the final arithmetic half.
+    signed = lambda n: n if n < 128 else n - 256
+    gain = lambda n, v: signed(n) * v // 64
+    tables = {
+        'nv_amplitude': bytes(gain(n,v) & 255 for v in range(65) for n in range(256)),
+        'nv_half_amplitude': bytes((gain(n,v) >> 1) & 255 for v in range(65) for n in range(256)),
+        'nv_speech_words': b''.join(struct.pack('>H', (gain(n,v) & 255) << 8) for v in range(65) for n in range(256)),
+        'nv_average': bytes(((signed(((i + 32768) & 65535) >> 8) + signed(i & 255)) >> 1) & 255 for i in range(65536)),
+    }
+    # Immutable tables share the existing read-only assembly section.
+    lines = [' section text,code']
+    for name, data in tables.items():
+        (BUILD / (name + '.bin')).write_bytes(data)
+        lines += [' even', ' xdef _' + name, '_' + name + ':', ' incbin "' + name + '.bin"']
+    (BUILD / 'hybrid_tables.s').write_text('\n'.join(lines) + '\n')
+
+
 def main():
     generate()
     objects = ['paula_mix','native_timeline','native_driver','game_speech','native_provenance']
@@ -290,9 +310,11 @@ def main():
          HERE/'native_clock.c','-o','native_clock.o'])
     run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','native_divmod.o',HERE/'native_divmod.s'])
     if HYBRID_MIX:
+        generate_hybrid_tables()
+        run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','hybrid_tables.o','hybrid_tables.s'])
         run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','hybrid_samples.o',HERE/'hybrid_samples.s'])
     run([TOOLS/'bin/vlink.exe','-bamigahunk','-Z','-Bstatic','-Cvbcc','-nostdlib','-Mmodule.map',
-         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','native_policy.o','native_clock.o','native_divmod.o']+(['hybrid_samples.o'] if HYBRID_MIX else []))
+         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','native_policy.o','native_clock.o','native_divmod.o']+(['hybrid_samples.o','hybrid_tables.o'] if HYBRID_MIX else []))
     append_module()
 
 def pack(*values):

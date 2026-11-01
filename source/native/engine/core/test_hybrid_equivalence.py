@@ -5,6 +5,7 @@ from pathlib import Path
 HERE=Path(__file__).resolve().parent
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--baseline',required=True,type=Path)
+parser.add_argument('--max-active-ratio',type=float,default=0.65,help='Required active IRQ instruction ratio against the chosen baseline')
 args=parser.parse_args()
 current=os.environ['MONKEY_ENGINE_BUILD']
 prefix=(HERE/'test_hybrid_driver.py').read_text().split("\ncall('_nv_driver_start')",1)[0]
@@ -66,7 +67,7 @@ for label,build in (('baseline',args.baseline),('current',current)):
  def step(*unused):count[0]+=1
  hook=ns['cpu'].hook_add(ns['unicorn'].UC_HOOK_CODE,step)
  ns['irq']();ns['cpu'].hook_del(hook);active_instructions[label]=count[0]
-assert active_instructions['current'] < active_instructions['baseline']*0.65,active_instructions
+assert active_instructions['current'] < active_instructions['baseline']*args.max_active_ratio,active_instructions
 os.environ['MONKEY_ENGINE_BUILD']=current
 report=dict(pass_=True,cases=cases,idle_irq_instructions=instructions,active_irq_instructions=active_instructions,baseline=old['meta']['sha256'],current=new['meta']['sha256'],scope='compiled 68000 output/state differential with clock/OS mocks; not hardware timing')
 (new['BUILD']/'hybrid-equivalence.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))

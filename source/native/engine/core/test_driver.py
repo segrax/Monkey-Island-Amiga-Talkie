@@ -16,7 +16,7 @@ from amitools.binfmt.hunk.HunkReader import HunkReader
 import unicorn
 from unicorn import m68k_const as r
 meta=json.loads((BUILD / 'module.json').read_text())
-bases=[0x100000,0x20000,0x200000,0x300000,0x310000,0x320000,0x330000]
+bases=[0x100000,0x20000,0x200000,0x300000,0x340000,0x380000,0x3c0000]
 cpu=unicorn.Uc(unicorn.UC_ARCH_M68K,unicorn.UC_MODE_BIG_ENDIAN)
 cpu.ctl_set_cpu_model(r.UC_CPU_M68K_M68000)
 reader=HunkReader();assert reader.read_file(str(BUILD / 'Monkey_Talkie_Test'))==0 and reader.build_segments()

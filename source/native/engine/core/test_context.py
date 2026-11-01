@@ -18,7 +18,7 @@ from amitools.binfmt.hunk.HunkReader import HunkReader
 import unicorn
 from unicorn import m68k_const as r
 
-bases=[0x100000,0x20000,0x200000,0x300000,0x310000,0x320000,0x330000,0x400000,0xa80000]
+bases=[0x100000,0x20000,0x200000,0x300000,0x340000,0x380000,0x3c0000,0x400000,0xa80000]
 IMAGE_DIR=Path(os.environ.get('NATIVE_FIXTURE_DIR',str(BUILD)))
 IMAGE=IMAGE_DIR/('Monkey_Talkie_Scaled' if (IMAGE_DIR/'Monkey_Talkie_Scaled').exists() else 'Monkey_Talkie_Test')
 meta=json.loads((IMAGE_DIR/'module.json').read_text())
