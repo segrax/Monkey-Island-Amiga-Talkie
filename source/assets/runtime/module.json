@@ -1,6 +1,6 @@
 {
   "original_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
-  "sha256": "88891edba0aa7b8052c37bcac2f9ed47c976d56828e7c694cab0322d531c8405",
+  "sha256": "9aa421218894c1e7db80c7ee2996f76364c80378a57c412ca6b00ba0b666db5e",
   "exports": {
     "_nv_native_write_ea0": {
       "hunk": 3,
@@ -676,15 +676,15 @@
     },
     "_nv_clock_start": {
       "hunk": 4,
-      "offset": 19852
+      "offset": 19740
     },
     "_nv_clock_stop": {
       "hunk": 4,
-      "offset": 20176
+      "offset": 19820
     },
     "_nv_clock_now": {
       "hunk": 4,
-      "offset": 20120
+      "offset": 19800
     },
     "_nv_control": {
       "hunk": 5,
@@ -745,6 +745,10 @@
     "_nv_metadata_rejected": {
       "hunk": 6,
       "offset": 24528
+    },
+    "_nv_clock_hardware": {
+      "hunk": 6,
+      "offset": 34428
     },
     "_scaled_one": {
       "hunk": 7,
@@ -1268,7 +1272,7 @@
     "max_render_ticks": 268,
     "late_buffers": 272
   },
-  "source_module_sha256": "459ea6596885bf75fa0c90fe33f44c9b4229af7784540b85e7a864538b3afd7f",
+  "source_module_sha256": "7e355aba707eb505240b3c8f41f5bb02dbc7d8f14de36513362c25f82c9ad660",
   "original_relocations_outside_engine_patch_footprints_retained": true,
   "engine_removed_original_relocations": [
     {
@@ -1335,7 +1339,7 @@
     "runtime_validation": false
   },
   "engine_stripe_relax": {
-    "source_module_sha256": "ca2092391fab7c186860087c674f12a74fb8ccc62fe51f1de2935ba8898e9cec",
+    "source_module_sha256": "d0a98790c7adc2aab785725677043ac59495beaac13dfe67b437ffc61309837a",
     "kernel_hunk": 9,
     "kernel_bytes": 376,
     "kernel_sha256": "d727ef0d71fc58eb39c2a1b1f250ba5dee546e9412b617cd7f7dd703c2a5c45b",
