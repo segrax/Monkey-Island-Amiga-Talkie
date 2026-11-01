@@ -18,7 +18,7 @@ No Python, .NET, compiler or internet connection is needed. The builder uses loc
 - Supported uncompressed English Ultimate Talkie `monster.sou`. Compressed `.sog`/`.so3` and other versions/languages are not supported. [Supported input hashes](source/assets/supported-inputs.json).
 - A PAL Amiga with storage and Fast RAM (8 MB recommended). An accelerator is not an enforced requirement, but smooth performance on an unaccelerated A500 with the current hybrid mixer has not been established.
 
-The native code targets the 68000 and uses Kickstart 1.3-compatible startup. Kickstart 1.3 is a compatibility target, rather than a verified minimum for the current hybrid release; that release still needs a fresh 1.3 test. Booting from a hard drive under 1.3 also depends on suitable controller/boot support, or a boot floppy.
+The native code targets the 68000 and supports Kickstart 1.3 and later. The 1.3 clock backend uses an available CIA timer allocated through the OS; 2.0+ uses `ReadEClock`. Opening speech has been verified in FS-UAE under Kickstart 1.3 with accelerated CPU timing; this does not establish stock A500 talkie performance. Booting from a hard drive under 1.3 also depends on suitable controller/boot support, or a boot floppy.
 
 The standard SOU lacks the 16 supplemental recordings used by the expanded development archive. Both archives are supported; the output reports the 16 omitted mappings when using the standard archive. Existing speech coverage limitations still apply.
 
