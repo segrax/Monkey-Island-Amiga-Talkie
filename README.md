@@ -22,6 +22,8 @@ The builder supports uncompressed `monster.sou` files. Compressed `.sog` and `.s
    Execute Play
    ```
 
+The generated `Play` script runs `MonkeyTalkie --skip-pirate-check` to skip the pirate-wheel screen. To show the screen, run `MonkeyTalkie` without the option instead.
+
 The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
 
 ## Amiga compatibility
