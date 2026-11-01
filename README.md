@@ -1,35 +1,43 @@
 # The Secret of Monkey Island: Amiga Talkie Edition
 
-Add Ultimate Talkie speech to the native Amiga version of Monkey Island, keeping its original graphics and all four music/SFX voices.
+Add Ultimate Talkie speech to the original Amiga game, preserving its graphics and all four music/SFX parts, with speech on both stereo outputs.
 
-## Build your game
+## What you need
 
-1. **Windows:** double-click **Build Amiga Talkie.exe**. **Linux:** run `./build-amiga-talkie` (use `chmod +x build-amiga-talkie` first if needed).
-2. Select your English Amiga game data, Ultimate Talkie `monster.sou`, and original Amiga executable or disk 1 ADF.
-3. Choose where to create the finished game folder.
-4. Copy that folder's contents to your Amiga. Change to it in an Amiga Shell and run **`Execute Play`**.
+- The original English Amiga game files, including `music.dat` and `sample.dat`.
+- The matching `Monkey_Island` executable or disk 1 ADF.
+- `monster.sou` from the English **Monkey Island Special Edition Ultimate Talkie**.
 
-No Python, .NET, compiler or internet connection is needed. The builder uses local files and preserves your originals and existing output folders. Linux uses standard system C/C++ libraries, with file pickers where available and terminal prompts otherwise.
+The builder supports uncompressed `monster.sou` files. Compressed `.sog` and `.so3` files are not supported.
 
-## Requirements
+## Build and play
 
-- Supported original English Amiga data (`000.LFL`, `901.LFL`–`904.LFL`, four `disk*.lec` files, `music.dat`, `sample.dat`). A folder containing `Rooms` also works.
-- Matching original `Monkey_Island` executable or original uncompressed DOS0 disk 1 ADF.
-- Supported uncompressed English Ultimate Talkie `monster.sou`. Compressed `.sog`/`.so3` and other versions/languages are not supported. [Supported input hashes](source/assets/supported-inputs.json).
-- A PAL Amiga with storage and Fast RAM (8 MB recommended). An accelerator is not an enforced requirement, but smooth performance on an unaccelerated A500 with the current hybrid mixer has not been established.
+1. On Windows, run **Build Amiga Talkie.exe**. On Linux, run `./build-amiga-talkie` (run `chmod +x build-amiga-talkie` first if needed).
+2. Select your Amiga game folder, executable or disk 1 ADF, and `monster.sou`.
+3. Choose an output folder.
+4. Copy the finished folder to your Amiga.
+5. Open an Amiga Shell, change to that folder and run:
 
-The native code targets the 68000 and supports Kickstart 1.3 and later. The 1.3 clock backend uses an available CIA timer allocated through the OS; 2.0+ uses `ReadEClock`. Opening speech has been verified in FS-UAE under Kickstart 1.3 with accelerated CPU timing; this does not establish stock A500 talkie performance. Booting from a hard drive under 1.3 also depends on suitable controller/boot support, or a boot floppy.
+   ```text
+   Execute Play
+   ```
 
-The standard SOU lacks the 16 supplemental recordings used by the expanded development archive. Both archives are supported; the output reports the 16 omitted mappings when using the standard archive. Existing speech coverage limitations still apply.
+The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
 
-The Amiga output uses prepared audio; it does not need `monster.sou` copied across. Keep its files together. The supplied `Play` script includes the temporary pirate-screen bypass used during development.
+## Amiga compatibility
 
-For emulator testing, the verified FS-UAE profile is PAL, 68030 at 50 MHz, 24-bit addressing, 1 MB Chip and 8 MB Fast RAM, JIT off, and CPU/memory/blitter cycle-exact options on. Selecting a CPU model alone does not select its clock speed. The same current build stalled with 32-bit addressing in the controlled FS-UAE comparison; use the tested 24-bit compatibility profile when reproducing results. This is not an exact TF536 timing model. See [validation](source/VALIDATION.md).
+- PAL Amiga with Kickstart 1.3 or later and storage for the game.
+- Fast RAM is not required.
+- An accelerator is recommended. The current version runs slowly on a stock 7 MHz 68000.
 
-## Source and credits
+Tested on a PAL A2000 with a TF536/68030, where it runs well.
 
-Everything needed for development is in [source](source/BUILDING.md), including CMake build instructions, native Amiga code, tests and third-party notices. The Windows/Linux builders produce matching game files from the same inputs.
+For emulators, use PAL, a 68030 at 50 MHz, 24-bit addressing, JIT disabled and cycle-exact timing enabled.
 
-Speech comes from **Monkey Island Special Edition Ultimate Talkie** and the user's own archive. No original game files, dialogue transcript, recordings, emulator or Kickstart ROM are bundled. Generated game folders must not be committed to this repository.
+## Development and credits
 
-Our software is GPL-3.0-or-later: [licence](LICENSE), [third-party credits](source/THIRD-PARTY-NOTICES.md). This is an unofficial, AI-assisted modification, not an official LucasArts, Lucasfilm Games, Disney or ScummVM release.
+See [Building from source](source/BUILDING.md) for the C++ builder and native Amiga code.
+
+Speech comes from **Monkey Island Special Edition Ultimate Talkie**.
+
+[GPL-3.0-or-later](LICENSE) | [Third-party credits](source/THIRD-PARTY-NOTICES.md)

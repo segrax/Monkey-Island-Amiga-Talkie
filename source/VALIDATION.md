@@ -1,5 +1,13 @@
 # Validation
 
+## 68000 gameplay slowdown confirmed
+
+The current full-audio hybrid remains unsuitable for smooth 7 MHz 68000 gameplay despite meeting audio-buffer deadlines. Diagnostic builds compared the current mixer with the same patched engine using original hardware music playback and speech disabled. Both retained the original graphics routines for this comparison. Settings were PAL 68000 at 7,093,790 Hz, CPU/memory/blitter cycle-exact options, JIT off, Kickstart 2.04, 1 MB Chip and 8 MB Fast RAM, SDL dummy audio.
+
+In bounded roughly 30-second opening-room samples, the hybrid averaged 1.38 calls/second to its dialogue-update hook, versus 5.59 for the hardware-music control. These are update-call counts rather than display FPS, and the animation/dialogue phases were not synchronized. Accumulated renderer timings consumed 55.5% of elapsed native clock time in that mixed music/speech interval, excluding work elsewhere in the audio IRQ and speech hooks. Mean speech-buffer render time was 6,354 E-clock ticks: about 77% of the 8,243-tick buffer interval. Audio can therefore avoid underruns while starving the game.
+
+A trial moving full-buffer temporary music samples from Chip RAM to ordinary scratch memory retained identical output/state across 128 differential cases. It did not meaningfully improve this run: 1.38 update calls/second, 55.4% render time and 6,339 ticks per speech buffer. The trial was discarded; neither its code nor the diagnostic probes were deployed. Installed engine remains `7e925bd3c7e148f2580f887e9852417f30d4da3c7e42f9ce38cd7a643fdaa4f0`. Local raw counters and the summary are in the development project's `build/validation/game-duty-*-v2/` and `game-duty-summary.json`. Keeping all four music/SFX parts and the current stereo speech quality at normal game speed on a 7 MHz 68000 remains unresolved.
+
 ## Hybrid mixer optimization with unchanged audio
 
 Current engine: `7e925bd3c7e148f2580f887e9852417f30d4da3c7e42f9ce38cd7a643fdaa4f0`.
