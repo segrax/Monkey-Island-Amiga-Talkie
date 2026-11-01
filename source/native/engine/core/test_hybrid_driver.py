@@ -35,7 +35,10 @@ def ptr(side,b):return get(driver+layout['right' if side else 'buffers']+4*b,4)
 def out(side,b):return bytes(cpu.mem_read(ptr(side,b),256))
 def write(c,off,value,size=2):
  put(bank+16*c+off,value,size);call('_nv_driver_write',bank+16*c,off)
+# Simulate loud output latches inherited from a previous player/game.
+for c in range(4):put(0xdff0a8+16*c,64,2)
 call('_nv_driver_start')
+assert all(get(0xdff0a8+16*c,2)==0 for c in range(4)), 'Startup left a Paula channel audible'
 assert len(allocs)==4 and hardware[0xdff096]&0x20f==0x203
 assert all(get(bases[0]+0x1942+4*c,4)==bank+16*c for c in range(4))
 for c,value in enumerate((30,60,-15,-6)):
@@ -113,6 +116,7 @@ hook=cpu.hook_add(unicorn.UC_HOOK_CODE,delayed_clock)
 irq();cpu.hook_del(hook)
 assert field('late_buffers',4)==prior_late+1 and field('max_render_ticks',4)>=9000
 call('_nv_driver_end')
+assert all(get(0xdff0a8+16*c,2)==0 for c in range(4)), 'Shutdown left a Paula channel audible'
 assert len(freed)==4 and stops==1 and nesting==-1
 assert get(0x70,4)==0x700400 and hardware[0xdff096]&15==0
 assert all(get(bases[0]+0x1942+4*c,4)==0xdff0a0+16*c for c in range(4))
@@ -121,5 +125,6 @@ report=dict(compiled_hybrid_pass=True,two_direct_hardware_music_channels=True,
  centered_speech_consumed_once=True,odd_tail_waits_for_playback=True,
  master_clear_keeps_speech=True,signed_full_scale_no_wrap=True,cancellation=True,
  no_write_only_audio_register_reads=True,bounded_chip_writes=True,cleanup=True,
+ all_four_startup_and_shutdown_volumes_muted=True,
  variable_pitch_waveform_and_loop_phase=True,render_deadline_counter_exercised=True,hardware_runtime=False,module_sha256=meta['sha256'])
 (BUILD/'hybrid-validation.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

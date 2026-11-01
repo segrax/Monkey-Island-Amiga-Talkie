@@ -31,6 +31,9 @@ def build(output, candidate=False, stereo_mix=False, hybrid_mix=False, skip_fixt
             subprocess.run(command, env=env, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
 
         run(SOURCE / 'core/build_module.py', '--with-metadata', *(['--hybrid-mix'] if hybrid_mix else ['--stereo-mix'] if stereo_mix else []))
+        if hybrid_mix:
+            for test in ('test_clock_lifecycle.py', 'test_clock_preemption.py', 'test_hybrid_driver.py'):
+                run(SOURCE / 'core' / test)
         run(SOURCE / 'scaling/generate.py')
         core, scaling, module = output / 'core', output / 'scaling', output / 'module'
         run(SOURCE / 'scaling/rebase.py', '--speech-dir', core, '--expected', digest(core / 'Monkey_Talkie_Test'),

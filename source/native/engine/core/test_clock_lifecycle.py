@@ -42,9 +42,11 @@ def cia_calls(uc,pc,size,data):
  elif pc==C-24:
   mask=uc.reg_read(r.UC_M68K_REG_D0)
   uc.reg_write(r.UC_M68K_REG_D0,cia['pending']);cia['pending']&=~mask
-  if cia['race']:
-   cia['race']=False;counter(65530);cia['pending']|=2
 cpu.hook_add(unicorn.UC_HOOK_CODE,cia_calls)
+def counter_wrap(uc,access,address,size,value,data):
+ if address==0xbfe601 and cia['race']:
+  cia['race']=False;counter(65530);cia['pending']|=2
+cpu.hook_add(unicorn.UC_HOOK_MEM_READ,counter_wrap)
 put(E+20,34,2);cia['available']=True
 assert call('_nv_clock_start')==0 and cia['attempts']==[1,0]
 cia['busy']=False;put(0xbfeF01,0x80,1);put(0xdff01c,0,2)
@@ -57,21 +59,28 @@ counter(65500);assert call('_nv_clock_now')==35
 counter(100);assert call('_nv_clock_now')==65435
 counter(65520);cia['pending']=2;assert call('_nv_clock_now')==65551
 assert call('_nv_clock_now')==65551 # pending wrap counted exactly once
-# A genuine resource callback extends the counter even without polling.
+# Deliver the wrap already observed by polling. Then another whole period
+# elapses without a poll: its callback must retain that full period too.
 interrupt=acquired[1];epoch=get(interrupt+14,4);handler=get(interrupt+18,4)
-put(0x50f000,0x600000,4);cpu.reg_write(r.UC_M68K_REG_A7,0x50f000)
-cpu.reg_write(r.UC_M68K_REG_A1,epoch);cpu.emu_start(handler,0x600000,count=1000)
+def callback():
+ cia['pending']&=~2
+ put(0x50f000,0x600000,4);cpu.reg_write(r.UC_M68K_REG_A7,0x50f000)
+ cpu.reg_write(r.UC_M68K_REG_A1,epoch);cpu.emu_start(handler,0x600000,count=10000)
+callback();assert call('_nv_clock_now')==65551
+callback()
 assert call('_nv_clock_now')==131087
 counter(1);cia['race']=True
-assert call('_nv_clock_now')==196613 and cia['pending']==0
+assert call('_nv_clock_now')==196613 and cia['pending']==2
 for sr in (0,0x2700):
  for master in (True,False):
   cpu.reg_write(r.UC_M68K_REG_SR,sr);put(0xdff01c,0x4000 if master else 0,2)
   assert call('_nv_clock_now')==196613
   assert bool(get(0xdff01c,2)&0x4000)==master
   assert cpu.reg_read(r.UC_M68K_REG_SR)&0x2700==sr
-put(epoch,0xffff0000,4);counter(65530);cia['pending']=2
+put(epoch,0xffff0000,4);put(epoch+4,0xfffffffe,4);put(epoch+8,1,2)
+counter(65530);cia['pending']=2
 assert call('_nv_clock_now')==5 # modulo-32-bit rollover, matching ReadEClock ev_lo
+callback();assert call('_nv_clock_now')==5
 call('_nv_clock_stop');assert cia['removed']==[acquired] and get(0xbfef01,1)==0x90
 assert get(sym('_nv_clock_hardware'),4)==0
 assert call('_nv_clock_now')==0

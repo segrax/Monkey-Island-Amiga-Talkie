@@ -406,7 +406,7 @@ def append_module():
                     active_audio='speech_on_paula0_native_channels_1_to_3_unchanged',
                     native_channel0_during_speech='muted_with_analytical_phase_and_macro_events',
                     voice_pcm='preprocessed_signed_ring_copied_without_mixing',
-                    hardware_clock='timer_device_ReadEClock_v36_no_CIA_allocation',
+                    hardware_clock='owned_ciaa_resource_timer_all_os',
                     skip_pirate_check_flag=8,
                     speech_balance=dict(max_speech_gain=48 if WITH_DUCKING else 64,
                                         native_gain_during_speech=16 if WITH_DUCKING else 64,

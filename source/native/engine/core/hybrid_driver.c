@@ -191,7 +191,11 @@ void nv_driver_start(void) {
  for(c=0;c<4;++c)nv_paula_init(&nv_driver.native[c],read_sample,0);
  nv_mixer_init(&nv_driver.tail,v,0,0,v->output_period);
  prior=lock();nv_driver.original_handler=L(0x70);
- W(AUD+8)=0;W(AUD+24)=0;W(DMA)=15;W(ENA)=0x780;W(REQ)=0x780;
+ /* Paula retains its output latch when DMA stops. Silence every channel,
+  * including the two direct music channels, before handing them to the game.
+  * Do not write AUDxDAT: that would start manual playback and raise an IRQ. */
+ for(c=0;c<4;++c)W(AUD+16*c+8)=0;
+ W(DMA)=15;W(ENA)=0x780;W(REQ)=0x780;
  for(c=0;c<4;++c)*(volatile NvU32 *)(nv_control.game_code+0x1942+4*c)=(NvU32)nv_stereo_bank[c];
  nv_driver.active=0;nv_driver.next_serial=0;nv_driver.first_irq=1;
  render(0,0);render(1,(NvU32)CHUNK*v->output_period);program(0);
@@ -257,7 +261,8 @@ void nv_driver_irq(void) {
 }
 void nv_driver_end(void) {
  NvU16 prior;unsigned c,b;if(!(nv_control.flags&NV_CONTROL_RUNNING))return;
- prior=lock();W(ENA)=0x780;W(REQ)=0x780;W(DMA)=15;W(AUD+8)=0;W(AUD+24)=0;
+ prior=lock();W(ENA)=0x780;W(REQ)=0x780;W(DMA)=15;
+ for(c=0;c<4;++c)W(AUD+16*c+8)=0;
  for(c=0;c<4;++c)*(volatile NvU32 *)(nv_control.game_code+0x1942+4*c)=AUD+16*c;
  L(0x70)=nv_driver.original_handler;nv_driver.running=0;nv_control.flags&=(NvU32)~NV_CONTROL_RUNNING;unlock(prior);
  for(b=0;b<2;++b){nv_free_chip(nv_driver.buffers[b],CHUNK);nv_free_chip(nv_driver.right[b],CHUNK);}

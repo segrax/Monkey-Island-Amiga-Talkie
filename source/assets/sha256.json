@@ -1,9 +1,9 @@
 {
-  "patches/engine.json": "e7c20c275249828bc972fe5de30651ae7741e785f9c20ee549b28e574c24e2b7",
+  "patches/engine.json": "8ad1388e3c1ba8e8de5c24e38a76a9ee0cd6ffa076ab868b0f27f51260e19206",
   "patches/map-recipe.json": "01c49253a7daae110adfbb545cce35b2d0c2fd34b27e9b0d781e6f1ea0fd693a",
-  "runtime/module.json": "a40dbfe56391c0821a34983c33de9d2ce60e77dc6fa1b1330d04d6b1131ded7d",
-  "runtime/MonkeyTalkie": "d540fe6e06bbc74e83ee95e050a80186509e9dc3b8ebaf3ab7a1d9b76267be95",
+  "runtime/module.json": "df834f85c838a90e4ca7b5b03a82d5bcd561b707879600b31be3e709940ff465",
+  "runtime/MonkeyTalkie": "88d2a66cdaa0b173d129b93fef4783bffa48c80b45bf8470b7647971f5218f0c",
   "runtime/VoiceServer-expanded": "d873f91c6ba2b994178c9259d711f83eb0ce214ca31782974a0f2de9beeebbf5",
   "runtime/VoiceServer-standard": "ceb871ba9aa7d4988ef20debb919a3ef57bd848579246dde4098b2f7d86838c5",
-  "supported-inputs.json": "dc7e0a702b2a6aaf9ddc3b7f01658796755072f013c1745882bad782d5e19e83"
+  "supported-inputs.json": "99d041d8ec0aab3c31e6104031381647e7585779aadb3eb638f39770f6748a2d"
 }

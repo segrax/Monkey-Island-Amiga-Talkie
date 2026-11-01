@@ -12,11 +12,12 @@ static NvU16 owned;
  * The original game replaces the CIAB level-6 handler and acknowledges the
  * entire CIAB ICR. Use CIAA only: no CIAB timer can provide a reliable overflow
  * callback while that handler is installed. Never take the game's CIAB timer.
- * Our snapshot consumes only our owned timer's pending wrap, even while the
- * game masks interrupts. No shared OS timer or CPU-specific correction. */
+ * Counter snapshots and callback epochs are reconciled even when the audio
+ * IRQ preempts CIA dispatch. No shared OS timer or CPU-specific correction. */
 static struct Library *cia_resource;
 static volatile NvU8 *cia_low, *cia_high, *cia_control;
-static volatile NvU32 cia_epoch;
+struct CiaCount { NvU32 epoch, ticks; NvU16 previous; };
+static struct CiaCount cia_count;
 static NvU16 cia_bit;
 static struct Interrupt cia_interrupt;
 volatile NvU32 nv_clock_hardware;
@@ -26,8 +27,9 @@ static void cia_remove(__reg("a6") struct Library *base,
  __reg("d0") NvU32 bit, __reg("a1") struct Interrupt *interrupt) = "\tjsr\t-12(a6)";
 static NvU32 cia_set(__reg("a6") struct Library *base,
  __reg("d0") NvU32 mask) = "\tjsr\t-24(a6)";
-static NvU32 cia_overflow(__reg("a1") volatile NvU32 *epoch) {
- *epoch += 65536UL;
+static NvU32 cia_sample(struct CiaCount *,NvU16);
+static NvU32 cia_overflow(__reg("a1") struct CiaCount *count) {
+ cia_sample(count,1);
  return 0;
 }
 static NvU16 master_state(void) = "\tmove.w\t$dff01c,d0\n\tandi.w\t#$4000,d0";
@@ -48,7 +50,7 @@ static int cia_start(void) {
  NvU16 prior = master_state();
  cia_interrupt.is_Node.ln_Type = NT_INTERRUPT;
  cia_interrupt.is_Node.ln_Name = "Monkey Talkie clock";
- cia_interrupt.is_Data = (void *)&cia_epoch;
+ cia_interrupt.is_Data = (void *)&cia_count;
  cia_interrupt.is_Code = (void (*)())cia_overflow;
  resource = OpenResource("ciaa.resource");
  if (resource) {
@@ -58,7 +60,8 @@ static int cia_start(void) {
    NvU32 address = 0xbfe001UL;
    Disable();
    if (!cia_add(resource, bit, &cia_interrupt)) {
-    cia_resource = resource; cia_bit = bit; cia_epoch = 0;
+    cia_resource = resource; cia_bit = bit;
+    cia_count.epoch = cia_count.ticks = 0; cia_count.previous = 65535;
     cia_low = (volatile NvU8 *)(address + (bit ? 0x600 : 0x400));
     nv_clock_hardware = (NvU32)cia_low;
     cia_high = cia_low + 0x100;
@@ -78,18 +81,23 @@ static int cia_start(void) {
  }
  return 0;
 }
-static NvU32 cia_now(void) {
- NvU16 before, after, pending, prior = master_state();
- NvU32 result;
+static NvU32 cia_sample(struct CiaCount *count,NvU16 overflow) {
+ NvU16 counter, prior = master_state();
+ NvU32 result, dispatched;
  Disable();
- do {
-  before = cia_counter();
-  pending = (NvU16)cia_set(cia_resource, 1UL << cia_bit);
-  if (pending & (1U << cia_bit)) cia_epoch += 65536UL;
-  after = cia_counter();
-  /* An underflow after SetICR must be consumed before publishing time. */
- } while (after > before);
- result = cia_epoch + (65535UL - after);
+ if (overflow) count->epoch += 65536UL;
+ counter = cia_counter();
+ /* The audio IRQ can preempt CIA resource dispatch after its pending flag
+  * was consumed but before our callback runs. Counter deltas still observe
+  * that wrap. Callback epochs also retain whole periods during idle polling
+  * gaps. Reconcile both observations without clearing resource pending bits
+  * or counting a deferred callback's already-observed wrap twice.
+  * The modular comparison is between adjacent observations, not absolute
+  * uptime, so it also works across the 32-bit clock rollover. */
+ result = count->ticks + (NvU16)(count->previous - counter);
+ dispatched = count->epoch + (65535UL - counter);
+ if ((NvS32)(dispatched - result) > 0) result = dispatched;
+ count->ticks = result; count->previous = counter;
  Enable(); if (!prior) restore_master_off();
  return result;
 }
@@ -103,7 +111,7 @@ int nv_clock_start(void) {
 }
 NvU32 nv_clock_now(void) {
  if (!owned) return 0;
- return cia_now();
+ return cia_sample(&cia_count,0);
 }
 void nv_clock_stop(void) {
  NvU16 prior;
