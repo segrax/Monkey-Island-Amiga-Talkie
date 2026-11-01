@@ -32,7 +32,7 @@ expected={s:{t:set(o)for t,o in groups.items()}for s,groups in oreloc.items()}
 for off in meta['removed_original_relocations']:expected[0][2].remove(off)
 expected[0].setdefault(7,set()).update(h['address']+2 for h in meta['hooks'])
 for s,groups in expected.items():assert groups==nreloc[s],s
-assert new.hunks[0]['hunks'][8]['memf']=='fast' and nreloc[8]=={8:set(json.loads((BUILD / 'generation.json').read_text())['prefix_pointer_offsets'])}
+assert new.hunks[0]['hunks'][8]['memf']=='' and nreloc[8]=={8:set(json.loads((BUILD / 'generation.json').read_text())['prefix_pointer_offsets'])}
 cs=capstone.Cs(capstone.CS_ARCH_M68K,capstone.CS_MODE_BIG_ENDIAN|capstone.CS_MODE_M68K_000);cs.detail=True
 ins=list(cs.disasm(nd[7],0));starts={i.address for i in ins};assert sum(i.size for i in ins)==len(nd[7])
 for i in ins:
@@ -50,5 +50,5 @@ base_manifest=json.loads(Path(rebase['source_manifest']).read_text());combined_m
 assert combined_manifest['patches']==base_manifest['patches']
 assert combined_manifest['driver_layout']==base_manifest['driver_layout']
 assert all(combined_manifest['exports'][name]==value for name,value in base_manifest['exports'].items())
-report=dict(source_core_sha256=base_manifest['sha256'],preserved_native_patch_count=len(base_manifest['patches']),all_source_exports_and_driver_layout_identical=True,production_sha256=meta['sha256'],all_previous7_hunk_sizes_flags_unchanged=True,all_previous_data_unchanged_except_two_10byte_detours=True,all_previous_relocations_preserved_except_two_overwritten_H2operands=True,removed_H2_offsets=meta['removed_original_relocations'],no_explicit_interior_inbound_targets=True,new_internal_branches_valid=True,prefix_memf_fast=True,prefix_pointer_relocations=len(nreloc[8][8]))
+report=dict(source_core_sha256=base_manifest['sha256'],preserved_native_patch_count=len(base_manifest['patches']),all_source_exports_and_driver_layout_identical=True,production_sha256=meta['sha256'],all_previous7_hunk_sizes_flags_unchanged=True,all_previous_data_unchanged_except_two_10byte_detours=True,all_previous_relocations_preserved_except_two_overwritten_H2operands=True,removed_H2_offsets=meta['removed_original_relocations'],no_explicit_interior_inbound_targets=True,new_internal_branches_valid=True,prefix_memf_any=True,prefix_pointer_relocations=len(nreloc[8][8]))
 (BUILD / 'static-validation.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

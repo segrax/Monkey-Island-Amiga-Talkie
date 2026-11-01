@@ -255,6 +255,10 @@ def generate():
                             terminal=terminal,expected=expected))
     lines.extend([' xdef _nv_irq','_nv_irq:',' movem.l d0-d7/a0-a6,-(sp)',
                   ' ori.w #$0700,sr',' jsr _nv_driver_irq',' movem.l (sp)+,d0-d7/a0-a6',' rte'])
+    lines.extend([' xdef _nv_music_tick','_nv_music_tick:',' movem.l d0-d7/a0-a6,-(sp)',
+                  ' move.l 64(sp),a0',' lea $176e(a0),a6',
+                  ' tst.b $44(a6)',' ble .done',' jsr $2cc(a0)',
+                  '.done:',' movem.l (sp)+,d0-d7/a0-a6',' rts'])
     lines.extend([' xdef _nv_zero_output','_nv_zero_output:',
                   ' move.l 4(sp),a0',' moveq #0,d0',' move.w 10(sp),d0',' beq .done',
                   ' move.l a0,d1',' btst #0,d1',' beq .words',' clr.b (a0)+',' subq.w #1,d0',
@@ -428,7 +432,7 @@ def append_module():
                     active_audio='speech_on_paula0_native_channels_1_to_3_unchanged',
                     native_channel0_during_speech='muted_with_analytical_phase_and_macro_events',
                     voice_pcm='preprocessed_signed_ring_copied_without_mixing',
-                    hardware_clock='owned_ciaa_resource_timer_all_os',
+                    hardware_clock='owned_ciaa_on_V34_to_V38; system_eclock_and_reserved_ciaa_music_on_V39_plus',
                     skip_pirate_check_flag=8,
                     speech_balance=dict(max_speech_gain=48 if WITH_DUCKING else 64,
                                         native_gain_during_speech=16 if WITH_DUCKING else 64,

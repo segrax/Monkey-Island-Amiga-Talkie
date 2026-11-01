@@ -1,12 +1,30 @@
 # Validation
 
+## Kickstart 3 music timer ownership
+
+Reproduced repeating music in the opening conversation with PAL 68020 timing at 7,093,790 and 14,187,580 Hz, cycle-exact disabled, 1 MB Chip, no Fast RAM and 1 MB Slow RAM, using Kickstart 3.1 rev 40.63. A matching Kickstart 1.3 run continued to advance the music. Speech buffers continued without underruns or late buffers in the failing 3.1 runs.
+
+The trace identified `timer.device` changing CIAB timer B to one-shot operation and stopping it after the original TFMX player had started it continuously. The recorded guest writes came from ROM addresses `00fbcb44` and `00fbcb48`; the player's own start came from its offset `161a`. The stopped timer left the last music samples looping. This was a timer ownership conflict, not an audio-buffer underrun.
+
+On Exec V39 and later, TFMX now uses the CIAA timer reserved through `cia.resource`. Its original tempo writes target that reserved timer, and its music tick runs from the registered callback. The player leaves the OS CIAB timer, pending flags and level-6 vector alone. Speech timing uses the OS E-clock after removing that conflict. Shutdown restores the original player bytes, removes the callback and closes the device. Kickstart 1.3/2.x retains its existing owned-clock path. All four music/SFX parts and stereo speech mixing are retained.
+
+Compiled 68000 tests cover both available CIAA timer choices, tempo-register routing, active/inactive music callbacks, unchanged OS level-6 vector, system-clock reads, exact restoration of the player, resource exhaustion, device-open failure and rejection of an unexpected player layout. Existing clock preemption/lifecycle and hybrid mixing/table checks pass.
+
+The corrected engine was run through the same opening under 3.1 at both CPU speeds and under 1.3 at 7 MHz. In five-second opening-room samples, the failing 3.1 runs had one unchanged music-register snapshot; corrected runs had 98 and 99 distinct snapshots, versus 98 for the 1.3 control. All three progressed to the village with no recorded speech underruns or late buffers. Emulator output was muted during these tests; these are sequencer, timing and gameplay-progress checks, not a new listening comparison or full playthrough.
+
+The graphics lookup table no longer requires Fast/Slow RAM: DOS can place it in Chip RAM when necessary. The previous flag caused `LoadSeg` error 103 under the low-memory 3.1 configuration despite free Chip RAM. The corrected allocation starts successfully there. Table contents and rendering code are unchanged.
+
+The matched engine is `53b0f07e17dda2a00f0ee67ff44907a7c7db565324e07bab15b7738edc0e3153`. The local prepared folders and three-file update package contain the rebuilt engine, loader and manifest. Both desktop builders embed that matched set.
+
+Both desktop builds passed their payload/format CTests and standalone standard-SOU generation, output checksum and invalid-input checks. Linux integration passed on its native filesystem. An earlier WSL run targeting the Windows-mounted filesystem hit a permission error while renaming its completed staging directory; that run was not counted as a pass. Local launcher hash/configuration checks also passed.
+
 ## 68000 gameplay slowdown confirmed
 
 The current full-audio hybrid remains unsuitable for smooth 7 MHz 68000 gameplay despite meeting audio-buffer deadlines. Diagnostic builds compared the current mixer with the same patched engine using original hardware music playback and speech disabled. Both retained the original graphics routines for this comparison. Settings were PAL 68000 at 7,093,790 Hz, CPU/memory/blitter cycle-exact options, JIT off, Kickstart 2.04, 1 MB Chip and 8 MB Fast RAM, SDL dummy audio.
 
 In bounded roughly 30-second opening-room samples, the hybrid averaged 1.38 calls/second to its dialogue-update hook, versus 5.59 for the hardware-music control. These are update-call counts rather than display FPS, and the animation/dialogue phases were not synchronized. Accumulated renderer timings consumed 55.5% of elapsed native clock time in that mixed music/speech interval, excluding work elsewhere in the audio IRQ and speech hooks. Mean speech-buffer render time was 6,354 E-clock ticks: about 77% of the 8,243-tick buffer interval. Audio can therefore avoid underruns while starving the game.
 
-A trial moving full-buffer temporary music samples from Chip RAM to ordinary scratch memory retained identical output/state across 128 differential cases. It did not meaningfully improve this run: 1.38 update calls/second, 55.4% render time and 6,339 ticks per speech buffer. The trial was discarded; neither its code nor the diagnostic probes were deployed. Installed engine remains `7e925bd3c7e148f2580f887e9852417f30d4da3c7e42f9ce38cd7a643fdaa4f0`. Local raw counters and the summary are in the development project's `build/validation/game-duty-*-v2/` and `game-duty-summary.json`. Keeping all four music/SFX parts and the current stereo speech quality at normal game speed on a 7 MHz 68000 remains unresolved.
+A trial moving full-buffer temporary music samples from Chip RAM to ordinary scratch memory retained identical output/state across 128 differential cases. It did not meaningfully improve this run: 1.38 update calls/second, 55.4% render time and 6,339 ticks per speech buffer. The trial was discarded; neither its code nor the diagnostic probes were deployed. The engine measured at that time was `7e925bd3c7e148f2580f887e9852417f30d4da3c7e42f9ce38cd7a643fdaa4f0`. Local raw counters and the summary are in the development project's `build/validation/game-duty-*-v2/` and `game-duty-summary.json`. Keeping all four music/SFX parts and the current stereo speech quality at normal game speed on a 7 MHz 68000 remains unresolved.
 
 ## Hybrid mixer optimization with unchanged audio
 

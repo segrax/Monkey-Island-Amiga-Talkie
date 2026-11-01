@@ -54,7 +54,10 @@ def build(source,output,expected):
  for off in kr[n+1]:kernel[off:off+4]=W(0)
  kernel+=bytes((-len(kernel))%4)
  prefix=(BUILD / 'scale_prefix.bin').read_bytes();assert len(prefix)==generation['prefix_bytes']
- hb=20+4*n;newhead=bytearray(raw[:hb]);struct.pack_into('>I',newhead,8,n+2);struct.pack_into('>I',newhead,16,n+1);newhead+=W(len(kernel)//4,0x80000000|len(prefix)//4)
+ # This CPU-only table does not require a particular memory bank. Let DOS
+ # prefer non-Chip memory and fall back to Chip when that bank is exhausted.
+ # Requiring FAST here makes LoadSeg fail on low-memory Kickstart 3 systems.
+ hb=20+4*n;newhead=bytearray(raw[:hb]);struct.pack_into('>I',newhead,8,n+2);struct.pack_into('>I',newhead,16,n+1);newhead+=W(len(kernel)//4,len(prefix)//4)
  # H0 has only code plus standard32-bit relocations and END; no metadata is discarded.
  allowed={'HUNK_HEADER','HUNK_CODE','HUNK_ABSRELOC32','HUNK_END'}
  assert all(h['type_name'] in allowed for h in r.hunks if h['hunk_file_offset']<=firstend)

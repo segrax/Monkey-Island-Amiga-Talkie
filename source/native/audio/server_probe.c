@@ -57,8 +57,10 @@ static int run_game(void) {
 		return 0;
 	}
 	segments = LoadSeg("Monkey_Talkie");
-	if (!segments)
+	if (!segments) {
+		printf("Cannot load Monkey_Talkie (DOS error %ld).\n", IoErr());
 		return 0;
+	}
 	base = segment_address(segments, NV_CONTROL_HUNK);
 	code = segment_address(segments, 0);
 	globals = segment_address(segments, 2);
