@@ -16,7 +16,9 @@ No Python, .NET, compiler or internet connection is needed. The builder uses loc
 - Supported original English Amiga data (`000.LFL`, `901.LFL`–`904.LFL`, four `disk*.lec` files, `music.dat`, `sample.dat`). A folder containing `Rooms` also works.
 - Matching original `Monkey_Island` executable or original uncompressed DOS0 disk 1 ADF.
 - Supported uncompressed English Ultimate Talkie `monster.sou`. Compressed `.sog`/`.so3` and other versions/languages are not supported. [Supported input hashes](source/assets/supported-inputs.json).
-- An accelerated PAL Amiga with Kickstart 2+, storage and preferably 8 MB Fast RAM. Stock A500 performance is not established.
+- A PAL Amiga with storage and Fast RAM (8 MB recommended). An accelerator is not an enforced requirement, but smooth performance on an unaccelerated A500 with the current hybrid mixer has not been established.
+
+The native code targets the 68000 and uses Kickstart 1.3-compatible startup. Kickstart 1.3 is a compatibility target, rather than a verified minimum for the current hybrid release; that release still needs a fresh 1.3 test. Booting from a hard drive under 1.3 also depends on suitable controller/boot support, or a boot floppy.
 
 The standard SOU lacks the 16 supplemental recordings used by the expanded development archive. Both archives are supported; the output reports the 16 omitted mappings when using the standard archive. Existing speech coverage limitations still apply.
 
