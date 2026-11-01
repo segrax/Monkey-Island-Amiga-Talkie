@@ -1,0 +1,13 @@
+* text=auto
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h text eol=lf
+*.cmake text eol=lf
+*.sh text eol=lf
+# Embedded payload hashes require exact bytes on every platform.
+source/assets/** -text -diff
+# Preserve upstream source/licence formatting rather than rewriting it.
+source/third_party/** -whitespace
+source/native/** whitespace=-blank-at-eof
+"Build Amiga Talkie.exe" -text
+build-amiga-talkie -text

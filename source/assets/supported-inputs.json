@@ -1,0 +1,35 @@
+{
+  "original_engine": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
+  "hybrid_engine": "8fc735717ffb7eb35b3cf268d6358012c337be07fbabee3bcee5d6477d575f09",
+  "rooms": {
+    "000.LFL": "fd60ea7b352156e4910c6271e4c38de92496067a37922d384cacddb537d8b13d",
+    "901.LFL": "0d341d1dfec0399083ef2c274cbb3464e1f1fba16090450f48f9551aabe3a023",
+    "902.LFL": "2b76090dc87fcae88fa1a850adac84e3314713fda193f6c6312822593e285608",
+    "903.LFL": "6b5426627b7e7704779ecf40116c66a6563f036776611d4bc5cd033e985c221c",
+    "904.LFL": "368fd80af264ea32e22cbe2793a854e36207350474dcc8b9818b8704382417ea",
+    "disk01.lec": "01e7a1374e5c623cd297f462ef69269dd01342a45002974404a44c8963e4335f",
+    "disk02.lec": "a9af443755d49dc3375d6fa53dd82717e974ed608564161f88af320b66154e50",
+    "DISK03.LEC": "47237bcefdddabb429b1ef3967ae51414477f86037cad1e301d9a6253ae19717",
+    "DISK04.LEC": "c0065565931f3f954240802bf0cf3faeab9a7b4a1303a848ee7caf6ae3dbef50",
+    "music.dat": "ab8d9510388180b9e2ee19db26a1070f7ab665c7c6de1bc462d1dab3c3eb3232",
+    "sample.dat": "4bc9aab75095a5b81c65f96f337e3fb924e7c3be82f6617d47257a6274a3c976"
+  },
+  "profiles": {
+    "standard": {
+      "label": "Standard English Ultimate Talkie (16 supplemental recordings unavailable)",
+      "source_sha256": "7990dd22199c76aa75eda2952b7e6c9cec3048451e8babd7766f19eabeff2b47",
+      "source_bytes": 196689623,
+      "map_sha256": "0b41e9a4f0fb25f577a2aa6567f58cd2bbd46ed7600de9f01635de0b6cddd62f",
+      "pcm_sha256": "a3a58a902c8e034b3a28578a3fd165932a14795ed10e4d4bdb9950fe23f7b14f",
+      "worker": "runtime/VoiceServer-standard"
+    },
+    "expanded": {
+      "label": "Expanded 16-recording archive; current full coverage",
+      "source_sha256": "45119490a85c4b7588272501da527666c777492ead9fe3a6ce6e3c44bd50f046",
+      "source_bytes": 198054609,
+      "map_sha256": "1f4fe61ea18cb921d762049f87950df2ba758c2e1c1a827cbf8396874224aad5",
+      "pcm_sha256": "467cd80746754bb0706326ffede6817bf43a1170c30d1d604d4cb43a723dc761",
+      "worker": "runtime/VoiceServer-expanded"
+    }
+  }
+}

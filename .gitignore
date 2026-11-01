@@ -1,0 +1,17 @@
+/build/
+/output/
+**/bin/
+**/obj/
+__pycache__/
+*.pyc
+*.pdb
+*.sou
+*.pcm
+*.adf
+*.rom
+*.lec
+*.LEC
+*.LFL
+
+# The ready-to-run native Windows builder is intentionally included.
+!Build Amiga Talkie.exe

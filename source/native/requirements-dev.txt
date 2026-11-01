@@ -1,0 +1,4 @@
+# Versions already used by the local native validation tools.
+amitools==0.8.1
+capstone==5.0.7
+unicorn==2.1.4
