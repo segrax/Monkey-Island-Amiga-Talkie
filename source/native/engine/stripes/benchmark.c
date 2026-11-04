@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: GPL-3.0-or-later */
 /* Isolated guest E-clock benchmark; never patches a running game. */
 #include <exec/types.h>
 #include <exec/memory.h>

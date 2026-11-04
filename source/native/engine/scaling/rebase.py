@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 """Apply generated sprite-scaling kernels to an explicitly selected seven-hunk core."""
 from pathlib import Path as _EnginePath
 import sys as _engine_sys
@@ -51,7 +50,7 @@ def main():
          '--output', str(BUILD / 'Monkey_Talkie_Scaled')],
         ['write_manifest.py', '--base', str(manifest), '--patch', str(BUILD / 'Monkey_Talkie_Scaled.json'),
          '--output', str(BUILD / 'module.json')],
-        ['test_static.py'], ['test_production.py']]
+        ['test_static.py'], ['test_prefix_counts.py'], ['test_production.py']]
     for command in commands:
         if args.skip_fixture_tests and command[0] == 'test_production.py':
             continue

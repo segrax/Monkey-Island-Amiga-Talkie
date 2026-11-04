@@ -14,6 +14,33 @@ static struct NvPolicy *policy;
 static struct NvSelector pending_selectors[NV_POLICY_LIMIT];
 static NvU16 pending_selector_count;
 
+extern const NvU8 nv_presence_bits[8192];
+NvU16 nv_presence_enabled;
+
+/* A negative bit test proves that no map key can contain the normalized text.
+ * Positive tests still use the full context/selector lookup in the worker. */
+NvU32 nv_presence_possible(const struct NativeSpeechContext *context) {
+ NvU32 hash=5381UL;NvU16 pos,used=0;NvU8 c;
+ if(!context || context->text_length>NATIVE_TEXT_BYTES)return 1;
+ for(pos=0;pos<context->text_length;++pos) {
+  c=context->text[pos];if(!c)break;
+  if(c==0xff || c==0xfe) {
+   if(++pos>=context->text_length)return 1;
+   c=context->text[pos];if(c==2 || c==3)break;
+   if(c==1 || c==8)continue;
+   if((c!=9 && c!=12 && c!=13 && c!=14) || context->text_length-pos<=2)return 1;
+   pos+=2;continue;
+  }
+  if(c>='A' && c<='Z')c+='a'-'A';
+  if((c>='a' && c<='z') || (c>='0' && c<='9')) {
+   hash=((hash<<5)+hash)^c;++used;
+  }
+ }
+ if(!used)return 0;
+ return (nv_presence_bits[(NvU16)hash>>3] & (1U<<((NvU16)hash&7))) &&
+  (nv_presence_bits[(NvU16)(hash>>16)>>3] & (1U<<((hash>>16)&7)));
+}
+
 int nv_game_set_policy(struct NvPolicy *candidate) {
 	policy = 0;
 	if (!candidate || candidate->magic != NV_POLICY_MAGIC || candidate->version != NV_POLICY_VERSION ||
@@ -121,7 +148,13 @@ int nv_game_active(void) {
 }
 
 int nv_game_play(const struct NativeSpeechContext *context) {
-	if (!context || context->text_length > NATIVE_TEXT_BYTES || !initialize())
+	if (!context || context->text_length > NATIVE_TEXT_BYTES)
+		return 0;
+	if (nv_presence_enabled && !nv_presence_possible(context)) {
+		nv_game_cancel();
+		return 0;
+	}
+	if (!initialize())
 		return 0;
 	copy_bytes(&pending, context, sizeof(pending));
 	pending_selector_count = policy && policy->selector_count <= NV_POLICY_LIMIT ? policy->selector_count : 0;

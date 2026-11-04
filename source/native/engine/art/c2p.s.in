@@ -1,0 +1,86 @@
+ section text,code
+ xdef _nv_art_c2p_kernel
+_nv_art_c2p_kernel:
+ movea.l sp,a0
+ movem.l d2-d5/d7/a2-a6,-(sp)
+ move.w 16(a0),d7
+ move.w 28(a0),d1
+ move.w 30(a0),d5
+ sub.w d1,d7
+ sub.w d5,d7
+ movea.l 8(a0),a1
+ movea.l 20(a0),a6
+ movea.l 24(a0),a5
+ movea.l 4(a0),a0
+ xdef _nv_continue_art_c2p_lut
+_nv_continue_art_c2p_lut:
+ movea.l $154b8.l,a2
+ movea.l a2,a4
+ adda.w #$4080,a4
+ moveq #0,d4
+ tst.w d5
+ beq .all_retail
+ tst.w d1
+ beq .cached_setup
+ subq.w #1,d1
+ movea.l a2,a3
+ adda.w #$2080,a3
+.prefix:
+ {original_row}
+ dbra d1,.prefix
+.cached_setup:
+ move.w d5,d1
+ subq.w #1,d1
+.cached:
+ move.w (a5)+,d4
+ lea (a6,d4.l),a3
+ cmpm.l (a1)+,(a3)+
+ bne .miss_first
+ cmpm.l (a1)+,(a3)+
+ bne .miss_second
+ move.b (a3)+,(a0)
+ move.b (a3)+,$1f40(a0)
+ move.b (a3)+,$5dc0(a0)
+ move.b (a3)+,$7d00(a0)
+ move.b (a3)+,$3e80(a0)
+ adda.w #312,a1
+ adda.w #40,a0
+ dbra d1,.cached
+ move.w -314(a1),d0
+ add.b d0,d0
+ add.b d0,d0
+ move.b -3(a3),d2
+ add.b d2,d2
+ move.b -1(a3),d2
+ bra .cached_done
+.miss_first:
+ subq.l #4,a1
+ bra .miss
+.miss_second:
+ subq.l #8,a1
+.miss:
+ movea.l a2,a3
+ adda.w #$2080,a3
+ {original_row}
+ dbra d1,.cached
+.cached_done:
+ dbra d7,.suffix_setup
+ bra .done
+.all_retail:
+ ; Reconstruct full caller height, independent of prefix for zero overlap.
+ movea.l sp,a3
+ adda.w #40,a3
+ move.w 16(a3),d1
+ subq.w #1,d1
+ bra .retail_setup
+.suffix_setup:
+ move.w d7,d1
+.retail_setup:
+ movea.l a2,a3
+ adda.w #$2080,a3
+.retail:
+ {original_row}
+ dbra d1,.retail
+.done:
+ movem.l (sp)+,d2-d5/d7/a2-a6
+ rts

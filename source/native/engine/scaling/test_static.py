@@ -34,7 +34,15 @@ expected[0].setdefault(7,set()).update(h['address']+2 for h in meta['hooks'])
 for s,groups in expected.items():assert groups==nreloc[s],s
 assert new.hunks[0]['hunks'][8]['memf']=='' and nreloc[8]=={8:set(json.loads((BUILD / 'generation.json').read_text())['prefix_pointer_offsets'])}
 cs=capstone.Cs(capstone.CS_ARCH_M68K,capstone.CS_MODE_BIG_ENDIAN|capstone.CS_MODE_M68K_000);cs.detail=True
-ins=list(cs.disasm(nd[7],0));starts={i.address for i in ins};assert sum(i.size for i in ins)==len(nd[7])
+generation=json.loads((BUILD/'generation.json').read_text());ranges=generation.get('embedded_data_ranges',[])
+ins=[];begin=0
+for lo,hi in sorted(ranges)+[(len(nd[7]),len(nd[7]))]:
+ decoded=list(cs.disasm(nd[7][begin:lo],begin));assert sum(i.size for i in decoded)==lo-begin
+ ins.extend(decoded);begin=hi
+starts={i.address for i in ins}
+for lo,hi in ranges:
+ assert hi-lo==512
+ for off in range(lo,hi,2):assert lo+int.from_bytes(nd[7][off:off+2],'big',signed=True) in starts
 for i in ins:
  for o in i.operands:
   if o.type==M.M68K_OP_BR_DISP:assert i.address+2+o.br_disp.disp in starts

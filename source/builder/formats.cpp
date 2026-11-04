@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
 #include "builder.hpp"
+#include "planar.hpp"
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -179,6 +179,27 @@ Bytes patch_engine(const Bytes &original) {
     }
     return result;
 }
+static void verify_presence_key(const Bytes &key, const Bytes &bits) {
+    for (std::size_t begin = 0; begin < key.size();) {
+        auto end = begin;
+        std::uint32_t hash = 5381;
+        bool used = false;
+        while (end < key.size() && key[end] != ':') {
+            auto c = key[end++];
+            if (c >= 'A' && c <= 'Z')
+                c += 'a' - 'A';
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                hash = ((hash << 5) + hash) ^ c;
+                used = true;
+            }
+        }
+        if (used)
+            for (auto bit : {hash & 65535U, hash >> 16})
+                require((bits[bit >> 3] & (1U << (bit & 7))) != 0,
+                        "Speech presence index is stale; rebuild the native runtime.");
+        begin = end + 1;
+    }
+}
 Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t archive_size) {
     auto r = payload_json("patches/map-recipe.json");
     std::vector<Bytes> streams, suffixes;
@@ -228,6 +249,10 @@ Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t arc
     }
     Bytes header = unhex(r["header"].get<std::string>()),
           policy = unhex(r["policy"].get<std::string>()), records;
+    auto presence = payload("patches/speech-presence.bin");
+    require(presence.size() == 8192, "Invalid speech presence index.");
+    for (const auto &entry : entries)
+        verify_presence_key(entry.key, presence);
     std::size_t start = 64 + entries.size() * 8 + policy.size();
     std::vector<std::pair<std::uint32_t, std::uint32_t>> index;
     for (const auto &e : entries) {
@@ -366,6 +391,7 @@ void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
     require(sha_file(path) == expected, "Prepared speech checksum failed.");
 }
 void self_test() {
+    test_planar();
     require(sha(Bytes{}) == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             "Empty SHA256 vector failed.");
     require(sha(Bytes{'a', 'b', 'c'}) ==

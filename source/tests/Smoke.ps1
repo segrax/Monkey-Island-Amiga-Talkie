@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 param(
     [Parameter(Mandatory=$true)][string]$Amiga,
     [Parameter(Mandatory=$true)][string]$Sou,
@@ -29,6 +28,10 @@ Assert-Hash (Join-Path $output 'Monkey_Talkie') $pins.hybrid_engine
 Assert-Hash (Join-Path $output 'amiga-talkie.dat') $profile.map_sha256
 Assert-Hash (Join-Path $output 'native-voice.pcm') $profile.pcm_sha256
 Assert-Hash (Join-Path $output 'VoiceServer') ((Get-FileHash -LiteralPath (Join-Path $sourceRoot ('assets\' + $profile.worker)) -Algorithm SHA256).Hash.ToLowerInvariant())
+$module = Get-Content -LiteralPath (Join-Path $sourceRoot 'assets\runtime\module.json') -Raw | ConvertFrom-Json
+if ($module.PSObject.Properties['engine_planar_cache']) {
+    Assert-Hash (Join-Path $output $module.engine_planar_cache.data_file) $module.engine_planar_cache.data_sha256
+}
 foreach ($room in $pins.rooms.PSObject.Properties) { Assert-Hash (Join-Path $output ('Rooms\' + $room.Name)) $room.Value }
 $manifest = Get-Content -LiteralPath (Join-Path $output 'build-manifest.json') -Raw | ConvertFrom-Json
 if (-not $manifest.complete) { throw 'Incomplete build manifest.' }

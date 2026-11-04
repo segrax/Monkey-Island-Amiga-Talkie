@@ -9,6 +9,8 @@ assert meta['audio_backend']=='continuous_stereo_mix'
 ticks=100;stops=0;nesting=-1
 for off in (-120,-126):cpu.mem_write(0x700800+off,bytes.fromhex('4e75'))
 mocked={sym('_nv_clock_start'):'start',sym('_nv_clock_now'):'now',sym('_nv_clock_stop'):'stop'}
+if '_nv_clock_now_locked' in meta['exports']:mocked[sym('_nv_clock_now_locked')]='now'
+clock_now_addresses={address for address,kind in mocked.items() if kind=='now'}
 for a in mocked:cpu.mem_write(a,bytes.fromhex('4e75'))
 def clock(uc,pc,size,unused):
  global stops,nesting

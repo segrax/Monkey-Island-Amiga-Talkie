@@ -15,6 +15,8 @@ output = args.output_dir.resolve()
 output.mkdir(parents=True, exist_ok=True)
 module = json.loads((args.module_dir / 'module.json').read_text())
 names = {"CONTROL": "_nv_control", "END": "_nv_driver_end", "SHUTDOWN": "_nv_game_shutdown"}
+if '_nv_presence_enabled' in module['exports']:
+    names['PRESENCE'] = '_nv_presence_enabled'
 lines = ["/* Generated from module.json; GPL-3.0-or-later. */"]
 image = (args.module_dir / 'Monkey_Talkie_Test').read_bytes()
 if hashlib.sha256(image).hexdigest() != module["sha256"]:

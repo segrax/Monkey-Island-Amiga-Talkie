@@ -32,7 +32,7 @@ The finished game includes prepared speech audio, so you do not need to copy `mo
 - A 68020 or faster is recommended. A 68000 at A500 speed cannot keep up with real-time playback.
 - Fast RAM is not required.
 
-Tested on a PAL A2000 with a TF536/68030, where it runs well. Also tested in an emulator with a 68020 and 1 MB Chip RAM, 1 MB Slow RAM and no Fast RAM. At A500 speed, some scenes slow down; A1200 speed or faster is recommended.
+Tested on a PAL A2000 with a TF536/68030, where it runs well. Also tested in an emulator with a 68020 and 1 MB Chip RAM, 1 MB Slow RAM and no Fast RAM. At A500 speed, some scenes slow down; A1200 speed or faster is recommended. Enable cycle-exact timing in the emulator: the opening scene slowed down with it disabled and ran smoothly with it enabled at 68020/A1200 speed.
 
 ## Development and credits
 

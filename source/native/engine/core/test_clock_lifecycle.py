@@ -47,6 +47,30 @@ def counter_wrap(uc,access,address,size,value,data):
  if address==0xbfe601 and cia['race']:
   cia['race']=False;counter(65530);cia['pending']|=2
 cpu.hook_add(unicorn.UC_HOOK_MEM_READ,counter_wrap)
+# The locked entry must not nest Exec Disable/Enable. Exercise IPL7 callers
+# with either raw interrupt-master state, and master-off task callers.
+clock_exec_calls=[]
+def count_clock_exec(uc,pc,size,data):
+ if pc in (E-120,E-126):clock_exec_calls.append(pc)
+cpu.hook_add(unicorn.UC_HOOK_CODE,count_clock_exec)
+
+def locked_clock_read():
+ sr=cpu.reg_read(r.UC_M68K_REG_SR);master=get(0xdff01c,2)
+ forced=(sr|0x2700) if master&0x4000 else sr
+ cpu.reg_write(r.UC_M68K_REG_SR,forced)
+ before=len(clock_exec_calls)
+ value=call('_nv_clock_now_locked')
+ assert len(clock_exec_calls)==before,'Locked read nested Exec interrupt calls'
+ assert get(0xdff01c,2)==master,'Locked read changed interrupt master'
+ assert cpu.reg_read(r.UC_M68K_REG_SR)&0x2700==forced&0x2700
+ cpu.reg_write(r.UC_M68K_REG_SR,sr)
+ return value
+
+def clock_read():
+ value=call('_nv_clock_now')
+ assert locked_clock_read()==value
+ return value
+
 put(E+20,34,2);cia['available']=True
 assert call('_nv_clock_start')==0 and cia['attempts']==[1,0]
 cia['busy']=False;put(0xbfeF01,0x80,1);put(0xdff01c,0,2)
@@ -55,10 +79,10 @@ assert get(sym('_nv_clock_hardware'),4)==0xbfe601
 assert get(0xbfef01,1)==0x91 # preserve unrelated TOD mode
 acquired=cia['acquired'];assert acquired[0]==1
 attempts=len(cia['attempts']);assert call('_nv_clock_start')==1 and len(cia['attempts'])==attempts
-counter(65500);assert call('_nv_clock_now')==35
-counter(100);assert call('_nv_clock_now')==65435
-counter(65520);cia['pending']=2;assert call('_nv_clock_now')==65551
-assert call('_nv_clock_now')==65551 # pending wrap counted exactly once
+counter(65500);assert clock_read()==35
+counter(100);assert clock_read()==65435
+counter(65520);cia['pending']=2;assert clock_read()==65551
+assert clock_read()==65551 # pending wrap counted exactly once
 # Deliver the wrap already observed by polling. Then another whole period
 # elapses without a poll: its callback must retain that full period too.
 interrupt=acquired[1];epoch=get(interrupt+14,4);handler=get(interrupt+18,4)
@@ -66,30 +90,30 @@ def callback():
  cia['pending']&=~2
  put(0x50f000,0x600000,4);cpu.reg_write(r.UC_M68K_REG_A7,0x50f000)
  cpu.reg_write(r.UC_M68K_REG_A1,epoch);cpu.emu_start(handler,0x600000,count=10000)
-callback();assert call('_nv_clock_now')==65551
+callback();assert clock_read()==65551
 callback()
-assert call('_nv_clock_now')==131087
+assert clock_read()==131087
 counter(1);cia['race']=True
-assert call('_nv_clock_now')==196613 and cia['pending']==2
+assert clock_read()==196613 and cia['pending']==2
 for sr in (0,0x2700):
  for master in (True,False):
   cpu.reg_write(r.UC_M68K_REG_SR,sr);put(0xdff01c,0x4000 if master else 0,2)
-  assert call('_nv_clock_now')==196613
+  assert clock_read()==196613
   assert bool(get(0xdff01c,2)&0x4000)==master
   assert cpu.reg_read(r.UC_M68K_REG_SR)&0x2700==sr
 put(epoch,0xffff0000,4);put(epoch+4,0xfffffffe,4);put(epoch+8,1,2)
 counter(65530);cia['pending']=2
-assert call('_nv_clock_now')==5 # modulo-32-bit rollover, matching ReadEClock ev_lo
-callback();assert call('_nv_clock_now')==5
+assert clock_read()==5 # modulo-32-bit rollover, matching ReadEClock ev_lo
+callback();assert clock_read()==5
 call('_nv_clock_stop');assert cia['removed']==[acquired] and get(0xbfef01,1)==0x90
 assert get(sym('_nv_clock_hardware'),4)==0
-assert call('_nv_clock_now')==0
+assert clock_read()==0
 call('_nv_clock_stop');assert cia['removed']==[acquired]
 cia['deny_b']=True;put(0xbfee01,0xc0,1)
 assert call('_nv_clock_start')==1 and cia['acquired'][0]==0
 assert get(0xbfee01,1)==0xd1 # preserve unrelated serial control bits
 put(0xbfe401,65000&255,1);put(0xbfe501,65000>>8,1);cia['pending']=2
-assert call('_nv_clock_now')==535 and cia['pending']==2 # leave another timer's pending bit alone
+assert clock_read()==535 and cia['pending']==2 # leave another timer's pending bit alone
 call('_nv_clock_stop');assert len(cia['removed'])==2 and get(0xbfee01,1)==0xd0
 # V37 must use the same owned timer, including masked-wrap snapshots.
 put(E+20,37,2);cia['deny_b']=False
@@ -98,9 +122,9 @@ for bad in (0,699999,720001):
  assert call('_nv_clock_start')==0 and len(cia['attempts'])==attempts
 put(E+0x238,709379,4)
 assert call('_nv_clock_start')==1 and cia['acquired'][0]==1
-counter(2);assert call('_nv_clock_now')==65533
+counter(2);assert clock_read()==65533
 counter(65530);cia['pending']=2
-assert call('_nv_clock_now')==65541
+assert clock_read()==65541
 call('_nv_clock_stop')
 result=dict(pass_=True,scope='compiled68000 owned CIA clock on V34/V37 with OS/resource mocks; not full OS execution',module_sha256=meta['sha256'])
 (BUILD / 'clock-lifecycle-results.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

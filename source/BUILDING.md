@@ -1,5 +1,33 @@
 # Development
 
+## Current runtime
+
+The Windows and Linux builders embed this matched runtime:
+
+- Engine: `2e0a21cdda321e4200b7267f58c545e9aaaaa7c2024ff26717cfda52129923fa`
+- Loader: `7d7d0112df0e127a8b8f453c7e6f15ce053a0d9e7fca8bc7ebd7d2f8ca5eb39a`
+- Manifest: `192db48730c7459ac7ea1bd3422fefbe79327d0efe2fa25a40e2747adac21f44`
+
+The native build uses `--candidate --hybrid-mix --planar-cache --planar-chip-fallback --glyph-cache --skip-fixture-tests`.
+See [native/BUILDING.md](native/BUILDING.md) for the complete command and toolchain.
+The source pipeline and standalone Windows/Linux generation checks pass;
+[VALIDATION.md](VALIDATION.md) records the measurements.
+
+The runtime plays all four music/SFX parts directly through Paula between speech
+lines. During speech, channels 0/1 mix music with centered stereo voice, then
+return to native playback after the speech tail drains. Original script/frame
+caps and speech samples/rate remain unchanged. Optional costume, graphics and font
+caches accelerate drawing, with the original renderers as fallback.
+
+The C++ builder generates `native-planar.dat` from the selected Amiga files and
+checks its SHA-256 against the runtime manifest. The runtime trusts generated
+pixel content, like prepared voice PCM, and checks bounds, alignment, live
+source, palette, history and pixels before using it. The graphics format is documented
+in [native/engine/art/FORMAT.md](native/engine/art/FORMAT.md). The builder also
+generates `native-font-2.dat` and `native-font-4.dat` from the selected game files.
+These font programs use the live palette and share the costume-cache allocation;
+costume drawing revokes them before that memory can be reused.
+
 All development files live here; the two runnable builders stay at the repository root.
 
 | Directory | Purpose |

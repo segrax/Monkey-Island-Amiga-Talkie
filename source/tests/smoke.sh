@@ -1,5 +1,4 @@
 #!/bin/sh
-# SPDX-License-Identifier: GPL-3.0-or-later
 set -eu
 if [ "$#" -ne 5 ]; then
     printf '%s\n' 'Usage: sh tests/smoke.sh /path/to/build-amiga-talkie /Amiga/data /monster.sou /disk1.adf /new/test/folder'
@@ -18,6 +17,9 @@ chmod +x "$BUILDER"
 "$BUILDER" --self-test
 OUTPUT="$WORK/Game output with spaces"
 "$BUILDER" --amiga "$AMIGA" --sou "$SOU" --engine "$ENGINE" --output "$OUTPUT"
+if grep -q '"engine_planar_cache"' "$OUTPUT/module.json"; then
+    test -s "$OUTPUT/native-planar.dat"
+fi
 find "$OUTPUT" -type f -exec sha256sum '{}' \; > "$WORK/before.sha256"
 if "$BUILDER" --amiga "$AMIGA" --sou "$SOU" --engine "$ENGINE" --output "$OUTPUT" >/dev/null 2>&1; then
     printf '%s\n' 'ERROR: existing output was accepted.' >&2; exit 1

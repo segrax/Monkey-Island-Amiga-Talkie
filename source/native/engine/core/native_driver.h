@@ -9,6 +9,7 @@
 #define NV_CONTROL_RUNNING 2
 #define NV_CONTROL_FAILED 4
 #define NV_CONTROL_SKIP_PIRATE_CHECK 8
+#define NV_CONTROL_DEBUG_BOOT 16
 
 struct NvPolicy;
 /* Loader publishes all pointers before original entry. */

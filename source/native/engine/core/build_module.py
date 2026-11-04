@@ -28,6 +28,17 @@ ENV = dict(os.environ, VBCC=str(TOOLS/'targets/m68k-amigaos'), PATH=str(TOOLS/'b
 WITH_METADATA = '--with-metadata' in sys.argv
 WITH_DUCKING = '--duck-music' in sys.argv
 HYBRID_MIX = '--hybrid-mix' in sys.argv
+COSTUME_CACHE = '--costume-cache' in sys.argv
+PLANAR_CACHE = '--planar-cache' in sys.argv
+GLYPH_CACHE = '--glyph-cache' in sys.argv
+PLANAR_CHIP = '--planar-chip-fallback' in sys.argv
+if PLANAR_CHIP and not PLANAR_CACHE:
+    raise SystemExit('The optional planar Chip fallback requires --planar-cache')
+if PLANAR_CACHE and not COSTUME_CACHE:
+    raise SystemExit('The planar prototype requires --costume-cache')
+if GLYPH_CACHE and not (HYBRID_MIX and COSTUME_CACHE and PLANAR_CACHE):
+    raise SystemExit('The glyph cache requires --hybrid-mix --costume-cache --planar-cache')
+RENDER_STATS = os.environ.get('MONKEY_RENDER_STATS') == '1'
 STEREO_MIX = '--stereo-mix' in sys.argv or HYBRID_MIX
 if STEREO_MIX and WITH_DUCKING:
     raise SystemExit('Stereo mixing uses fixed headroom; do not enable music ducking')
@@ -65,6 +76,24 @@ CONTROL_SAVE = '''
  move.w d0,-(sp)
 '''
 RESTORE = ' move.w (sp)+,ccr\n movem.l (sp)+,d0-d7/a0-a6\n'
+# These music adapters call ordinary C functions. VBCC's stack-call ABI already
+# preserves D2-D7/A2-A6. Only volatile D0/D1/A0/A1 and the D2-D4 used while
+# capturing CCR need adapter saves; the remaining eight registers stay intact.
+MUSIC_SAVE = SAVE.replace('d0-d7/a0-a6', 'd0-d4/a0-a1')
+MUSIC_RESTORE = RESTORE.replace('d0-d7/a0-a6', 'd0-d4/a0-a1')
+# Only period/volume adapters end in MOVE.W, which clears C/V and preserves X.
+# Capture X only; rereading the unchanged mirror restores the MOVE.W NZVC.
+# Pointer/length replay may end in ADDQ or LSR and needs the general capture.
+MUSIC_WORD_SAVE = """
+ movem.l d0-d1/a0-a1,-(sp)
+ subx.b d0,d0
+ andi.w #16,d0
+ move.w d0,-(sp)
+ movem.l 2(sp),d0-d1/a0-a1
+"""
+MUSIC_WORD_RESTORE = RESTORE.replace('d0-d7/a0-a6', 'd0-d1/a0-a1')
+
+
 
 def run(args):
     subprocess.run([str(a) for a in args], cwd=BUILD, env=ENV, check=True)
@@ -88,6 +117,9 @@ def generate():
     if WITH_DUCKING or STEREO_MIX: imports += ['nv_driver_volume','nv_driver_clear_native_volume']
     if STEREO_MIX: imports += ['nv_stereo_bank']
     if WITH_METADATA: imports += ['nv_metadata_save','nv_metadata_load_begin','nv_metadata_load']
+    if COSTUME_CACHE: imports += ['nv_costume_cache_start','nv_costume_cache_stop','nv_driver_audio_end','nv_control']
+    if PLANAR_CACHE: imports += ['nv_art_game_start','nv_art_game_stop']
+    if GLYPH_CACHE: imports += ['nv_glyph_scope_cancel']
     lines += [' xref _' + name for name in imports]
     patches = []
     for address,size,offset in ((0xb6a,6,0),(0xe82,6,0),(0xea0,10,0),
@@ -97,9 +129,11 @@ def generate():
         name='_nv_native_write_%x'%address
         lines += [' xdef '+name,name+':']
         if address in (0x84a,0xd5c): lines += [' tst.w $c0(a5)',' bne .skip_write']
+        direct = HYBRID_MIX and offset in (6,8)
         if STEREO_MIX:
             for channel in range(4):
-                lines += [' cmpa.l #_nv_stereo_bank+%d,a4'%(16*channel),' beq .tracked_write']
+                target='.direct_input_%d'%channel if direct and channel>=2 else '.tracked_write'
+                lines += [' cmpa.l #_nv_stereo_bank+%d,a4'%(16*channel),' beq '+target]
             lines += [' bra .fast_write','.tracked_write:']
         else:
             lines += [' cmpa.l #_nv_driver+72,a4',' bne .fast_write']
@@ -114,9 +148,44 @@ def generate():
             replay=4 if address in (0x8ae,0xd62) else size
             lines += [' dc.b '+','.join('$%02x'%b for b in code[address:address+replay])]
             continuation=0x8c8 if address==0x8ae else address+size
-        lines += [SAVE,' move.l #%d,-(sp)'%offset,' move.l a4,-(sp)',
-                  ' jsr _nv_driver_write',' lea 8(sp),sp',RESTORE]
-        lines += [' bra .write_done','.fast_write:']
+        # Hybrid channels 2/3 already use physical Paula DMA. Forward their
+        # frequent period/volume writes here without a full C adapter call.
+        save,restore = SAVE,RESTORE
+        if HYBRID_MIX:
+            save,restore = (MUSIC_WORD_SAVE,MUSIC_WORD_RESTORE) if offset in (6,8) else (MUSIC_SAVE,MUSIC_RESTORE)
+        lines += [save,' move.l #%d,-(sp)'%offset,' move.l a4,-(sp)',
+                  ' jsr _nv_driver_write',' lea 8(sp),sp',restore]
+        if HYBRID_MIX and offset in (6,8): lines += [' tst.w %d(a4)'%offset]
+        lines += [' bra .write_done']
+        if direct:
+            for channel in (2,3):
+                lines += ['.direct_input_%d:'%channel]
+                if offset==8:
+                    lines += [' btst #6,d1',' bne .input_volume_%d'%channel,
+                              ' add.w d0,d0',' add.w d0,d0',' mulu.w d1,d0',
+                              ' lsr.w #8,d0','.input_volume_%d:'%channel,
+                              ' move.w d0,8(a4)']
+                elif address in (0x84a,0xd5c):
+                    lines += [' move.w d0,6(a4)']
+                else:
+                    replay=4 if address==0x8ae else size
+                    lines += [' dc.b '+','.join('$%02x'%b for b in code[address:address+replay])]
+                if offset==6:
+                    # MOVE restores the original word-store NZVC; X is untouched.
+                    lines += [' move.w 6(a4),$%x.l'%(0xdff0a6+16*channel)]
+                else:
+                    # Match Paula's bit-6 volume override and fixed half gain.
+                    # ROR preserves X, unlike LSR. Restoring D0 also restores the
+                    # NZVC flags of the original MOVE.W to the mirrored register.
+                    lines += [' move.w d0,-(sp)',' btst #6,d0',
+                              ' bne .full_%d'%channel,' andi.w #63,d0',
+                              ' ror.w #1,d0',' andi.w #31,d0',
+                              ' bra .volume_%d'%channel,'.full_%d:'%channel,
+                              ' move.w #32,d0','.volume_%d:'%channel,
+                              ' move.w d0,$%x.l'%(0xdff0a8+16*channel),
+                              ' move.w (sp)+,d0']
+                lines += [' bra .write_done']
+        lines += ['.fast_write:']
         if address in (0x96a,0xb0e):
             lines += [' btst #6,d1',' bne .fast_volume',' add.w d0,d0',' add.w d0,d0',
                       ' mulu.w d1,d0',' lsr.w #8,d0','.fast_volume:',' move.w d0,8(a4)']
@@ -191,7 +260,15 @@ def generate():
         (0xdddc,8,'display','nv_dialogue_display','4e55fff848e73910',True),
         (0xe158,6,'stop','nv_dialogue_stop','2f02422c59f7',False)):
         assert code[address:address+size].hex() == expected
-        lines.extend([' xdef _nv_'+name,'_nv_'+name+':',SAVE,' jsr _'+helper])
+        lines.extend([' xdef _nv_'+name,'_nv_'+name+':',SAVE])
+        if GLYPH_CACHE and name=='display':lines.append(' jsr _nv_glyph_scope_cancel')
+        lines.append(' jsr _'+helper)
+        if COSTUME_CACHE and name=='entry':
+            lines += [' btst #1,_nv_control+23',' beq .no_costume_cache',
+                      ' jsr _nv_costume_cache_start','.no_costume_cache:']
+        if PLANAR_CACHE and name=='entry':
+            lines += [' btst #1,_nv_control+23',' beq .no_planar_cache',
+                      ' jsr _nv_art_game_start','.no_planar_cache:']
         if hold:
             lines.extend([' tst.l d0',' beq .proceed',RESTORE,' rts','.proceed:'])
         lines.extend([RESTORE,' dc.b '+','.join('$%02x'%v for v in code[address:address+size]),
@@ -253,19 +330,100 @@ def generate():
             lines.extend([' xdef _nv_continue_'+name,'_nv_continue_'+name+':',' jmp $%x.l'%(address+size)])
         patches.append(dict(address=address,size=size,symbol=name,jump=True,continuation=address+size,
                             terminal=terminal,expected=expected))
-    lines.extend([' xdef _nv_irq','_nv_irq:',' movem.l d0-d7/a0-a6,-(sp)',
-                  ' ori.w #$0700,sr',' jsr _nv_driver_irq',' movem.l (sp)+,d0-d7/a0-a6',' rte'])
+    # The hybrid IRQ calls a stack-ABI C function and ABI-preserving sample
+    # helpers. RTE restores SR from the untouched exception frame; only the
+    # four C-volatile registers need an explicit interrupt save.
+    irq_registers = 'd0-d1/a0-a1' if HYBRID_MIX else 'd0-d7/a0-a6'
+    lines.extend([' xdef _nv_irq','_nv_irq:',' movem.l '+irq_registers+',-(sp)',
+                  ' ori.w #$0700,sr',' jsr _nv_driver_irq',' movem.l (sp)+,'+irq_registers,' rte'])
     lines.extend([' xdef _nv_music_tick','_nv_music_tick:',' movem.l d0-d7/a0-a6,-(sp)',
                   ' move.l 64(sp),a0',' lea $176e(a0),a6',
                   ' tst.b $44(a6)',' ble .done',' jsr $2cc(a0)',
                   '.done:',' movem.l (sp)+,d0-d7/a0-a6',' rts'])
-    lines.extend([' xdef _nv_zero_output','_nv_zero_output:',
-                  ' move.l 4(sp),a0',' moveq #0,d0',' move.w 10(sp),d0',' beq .done',
-                  ' move.l a0,d1',' btst #0,d1',' beq .words',' clr.b (a0)+',' subq.w #1,d0',
-                  '.words:',' move.w d0,d1',' lsr.w #2,d1',' beq .bytes',' subq.w #1,d1',
-                  '.long:',' clr.l (a0)+',' dbra d1,.long',
-                  '.bytes:',' andi.w #3,d0',' beq .done',' subq.w #1,d0',
-                  '.byte:',' clr.b (a0)+',' dbra d0,.byte','.done:',' rts'])
+    if HYBRID_MIX:
+        # OldROM uses the original whole-EXTER vector. Hold that one source
+        # masked while permitting Paula4/serial5 to preempt its music body.
+        # V39+ redirects music to CIAA and never installs this vector.
+        assert code[0x1638:0x1642].hex() == '48e780024a3900bfdd00'
+        assert code[0x1642:0x164a].hex() == '33fc200000dff09c'
+        assert code[0x165a:0x1660].hex() == '4cdf40014e73'
+        lines += [
+            ' xdef _nv_music_priority_entry',
+            '_nv_music_priority_entry:',
+            ' movem.l d0/a6,-(sp)',
+            ' move.w sr,-(sp)',
+            ' move.w $dff01c,d0',
+            ' andi.w #$2000,d0',
+            ' move.w d0,-(sp)',
+            ' move.w #$2000,$dff09a',
+            # Replay the original single ICR read and ACK before admitting preemption.
+            ' tst.b $bfdd00',
+            ' move.w #$2000,$dff09c',
+            ' move.w 2(sp),d0',
+            ' andi.w #$f8ff,d0',
+            ' ori.w #$0300,d0',
+            ' move.w d0,sr',
+            ' move.l 4(sp),d0',
+            ' xdef _nv_continue_music_priority',
+            '_nv_continue_music_priority:',
+            ' jmp $164a.l',
+            ' xdef _nv_music_priority_exit',
+            '_nv_music_priority_exit:',
+            # Restore the savedentryIPL6 atomically before EXTER admission.
+            ' move.w 2(sp),d0',
+            ' move.w d0,sr',
+            ' tst.w (sp)+',
+            ' beq.s .masked',
+            ' move.w #$a000,$dff09a',
+            '.masked:',
+            ' addq.l #2,sp',
+            ' movem.l (sp)+,d0/a6',
+            ' rte',
+        ]
+        patches += [
+            dict(address=0x1638,size=10,symbol='_nv_music_priority_entry',
+                 jump=True,continuation=0x164a,terminal=False,
+                 replayed_ack_address=0x1642,replayed_ack_expected='33fc200000dff09c',
+                 expected='48e780024a3900bfdd00'),
+            dict(address=0x165a,size=6,symbol='_nv_music_priority_exit',
+                 jump=True,terminal=True,expected='4cdf40014e73'),
+        ]
+    # A register-zero MOVE avoids the 68000 CLR memory read cycle. A1 is
+    # caller-volatile and holds the tail count; no callee saves are needed.
+    lines.extend([
+        ' xdef _nv_zero_output',
+        '_nv_zero_output:',
+        ' movea.l 4(sp),a0',
+        ' moveq #0,d0',
+        ' move.w 10(sp),d0',
+        ' beq.s .done',
+        ' move.l a0,d1',
+        ' btst #0,d1',
+        ' beq.s .words',
+        ' moveq #0,d1',
+        ' move.b d1,(a0)+',
+        ' subq.w #1,d0',
+        '.words:',
+        ' movea.w d0,a1',
+        ' lsr.w #2,d0',
+        ' beq.s .bytes',
+        ' subq.w #1,d0',
+        ' moveq #0,d1',
+        '.long:',
+        ' move.l d1,(a0)+',
+        ' dbra d0,.long',
+        '.bytes:',
+        ' move.w a1,d0',
+        ' andi.w #3,d0',
+        ' beq.s .done',
+        ' subq.w #1,d0',
+        ' moveq #0,d1',
+        '.byte:',
+        ' move.b d1,(a0)+',
+        ' dbra d0,.byte',
+        '.done:',
+        ' rts',
+    ])
     lines += (ROOT / 'audio/word-copy-output/copy_output.s').read_text().splitlines()[2:]
     for name,lvo in (('nv_disable_interrupts',-120),('nv_enable_interrupts',-126)):
         lines += [' xdef _'+name,'_'+name+':',' move.l a6,-(sp)',' move.l 4.w,a6',
@@ -276,6 +434,13 @@ def generate():
         'nv_signal_worker':[' move.l 8(sp),a1',' move.l 12(sp),d0',' move.l 4.w,a6',' jsr -324(a6)']
     }.items():
         lines.extend([' xdef _'+name,'_'+name+':',' move.l a6,-(sp)']+body+[' move.l (sp)+,a6',' rts'])
+    if COSTUME_CACHE:
+        lines += [' xdef _nv_driver_end','_nv_driver_end:',
+                  *([' jsr _nv_art_game_stop'] if PLANAR_CACHE else []),
+                  ' jsr _nv_costume_cache_stop',' jmp _nv_driver_audio_end']
+    if PLANAR_CACHE:
+        from art.generate_glue import append
+        append(lines, patches, code, SAVE, RESTORE)
     (BUILD / 'wrappers.s').write_text('\n'.join(lines)+'\n')
     (BUILD / 'patches.json').write_text(json.dumps(patches,indent=2)+'\n')
 
@@ -304,21 +469,63 @@ def main():
     objects = ['paula_mix','native_timeline','native_driver','game_speech','native_provenance']
     if WITH_METADATA: objects.append('native_metadata')
     for name in objects:
-        run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O2','-cpu=68000']+
-            (['-DNV_MUSIC_DUCK'] if WITH_DUCKING else [])+['-I'+str(HERE),'-I'+str(WORKER),HERE/(('hybrid_driver.c' if HYBRID_MIX else 'stereo_driver.c') if STEREO_MIX and name=='native_driver' else name+'.c'),'-o',name+'.o'])
+        # O3-equivalent single-file optimization enables inlining and loop
+        # unrolling. The numeric form avoids vc's Windows -O3 temp-path bug.
+        options = ['-O=65535','-schedule','-speed'] if HYBRID_MIX and name=='native_driver' else ['-O2']
+        run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c',*options,'-cpu=68000']+
+            (['-DNV_QUIET_NATIVE'] if HYBRID_MIX and name=='native_driver' else [])+(['-DNV_MUSIC_DUCK'] if WITH_DUCKING else [])+(['-DNV_RENDER_STATS'] if HYBRID_MIX and RENDER_STATS else [])+(['-Dnv_driver_end=nv_driver_audio_end'] if COSTUME_CACHE and name=='native_driver' else [])+['-I'+str(HERE),'-I'+str(WORKER),HERE/(('hybrid_driver.c' if HYBRID_MIX else 'stereo_driver.c') if STEREO_MIX and name=='native_driver' else name+'.c'),'-o',name+'.o'])
     for name in ('native_client', 'native_policy'):
         run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O2','-cpu=68000',
              '-I'+str(WORKER), WORKER/(name+'.c'), '-o', name+'.o'])
+    presence = HERE / 'speech_presence.bin'
+    if len(presence.read_bytes()) != 8192:
+        raise ValueError('Speech presence filter must contain 65536 bits')
+    (BUILD / 'speech_presence.s').write_text(' section text,code\n xdef _nv_presence_bits\n_nv_presence_bits:\n incbin "' + presence.as_posix() + '"\n')
+    run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','speech_presence.o','speech_presence.s'])
     run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','wrappers.o','wrappers.s'])
     run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O2','-cpu=68000',
          HERE/'native_clock.c','-o','native_clock.o'])
     run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','native_divmod.o',HERE/'native_divmod.s'])
+    run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','native_timeline_entry.o',HERE/'native_timeline_entry.s'])
     if HYBRID_MIX:
+        run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-DNV_QUIET_NATIVE=1','-o','native_write_entry.o',HERE/'native_write_entry.s'])
+        run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','native_hw_read.o',HERE/'native_hw_read.s'])
         generate_hybrid_tables()
         run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','hybrid_tables.o','hybrid_tables.s'])
         run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','hybrid_samples.o',HERE/'hybrid_samples.s'])
+    cache_objects=[]
+    if COSTUME_CACHE:
+        cache=HERE.parent/'scaling'
+        run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O2','-cpu=68000',
+             *(['-DNV_ART_COSTUME_CACHE'] if PLANAR_CACHE else []),
+             '-I'+str(HERE),'-I'+str(cache),cache/'cache_manager.c','-o','cache_manager.o'])
+        run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o','cache_glue.o',cache/'cache_glue.s'])
+        cache_objects=['cache_manager.o','cache_glue.o']
+    art_objects=[]
+    if PLANAR_CACHE:
+        art=HERE.parent/'art'
+        for name in ('art_manager','art_runtime','art_game'):
+            run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c',
+                 *(['-O=65535','-schedule','-speed'] if name == 'art_game' else ['-O2']),'-cpu=68000',
+                 '-DNV_ART_NATIVE_CHECKSUM','-DNV_ART_COSTUME_CACHE',
+                 *(['-DNV_ART_ALLOW_CHIP'] if PLANAR_CHIP else []),
+                 '-I'+str(HERE),'-I'+str(HERE.parent/'scaling'),
+                 art/(name+'.c'),'-o',name+'.o'])
+            art_objects.append(name+'.o')
+        for name in ('art_io','art_checksum','art_indices'):
+            run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk',
+                 '-o',name+'.o',art/(name+'.s')])
+            art_objects.append(name+'.o')
+    if GLYPH_CACHE:
+        glyph=HERE.parent/'glyph'
+        run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O=65535','-schedule','-speed','-cpu=68000','-DNV_ART_COSTUME_CACHE',
+             '-I'+str(HERE),'-I'+str(HERE.parent/'scaling'),'-I'+str(HERE.parent/'art'),glyph/'glyph_manager.c','-o','glyph_manager.o'])
+        run([TOOLS/'bin/vc.exe','+'+str(ROOT/'audio/kick13.cfg'),'-c','-O=65535','-schedule','-speed','-cpu=68000','-DNV_ART_COSTUME_CACHE','-I'+str(HERE),'-I'+str(HERE.parent/'scaling'),'-I'+str(HERE.parent/'art'),glyph/'glyph_scope.c','-o','glyph_scope.o'])
+        for name in ('glyph_glue','glyph_io','glyph_compare'):
+            run([TOOLS/'bin/vasmm68k_mot.exe','-quiet','-m68000','-Fhunk','-o',name+'.o',glyph/(name+'.s')])
+        art_objects += ['glyph_manager.o','glyph_scope.o','glyph_glue.o','glyph_io.o','glyph_compare.o']
     run([TOOLS/'bin/vlink.exe','-bamigahunk','-Z','-Bstatic','-Cvbcc','-nostdlib','-Mmodule.map',
-         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','native_policy.o','native_clock.o','native_divmod.o']+(['hybrid_samples.o','hybrid_tables.o'] if HYBRID_MIX else []))
+         '-o','module.hunk','wrappers.o']+[name+'.o' for name in objects]+['native_client.o','speech_presence.o','native_policy.o','native_clock.o','native_divmod.o','native_timeline_entry.o']+(['native_write_entry.o','native_hw_read.o','hybrid_samples.o','hybrid_tables.o'] if HYBRID_MIX else [])+cache_objects+art_objects)
     append_module()
 
 def pack(*values):
@@ -337,6 +544,8 @@ def append_module():
             for name,offset in h['symbols']:
                 if name.startswith('_nv_') or name == '_SysBase':
                     symbols[name] = dict(hunk=current+3,offset=offset)
+    if HYBRID_MIX:
+        assert symbols["_nv_stereo_bank"]["offset"] % 2 == 0
     body = bytearray(original[32:])
     code = next(h for h in old.hunks if h['type_name']=='HUNK_CODE')
     patches = json.loads((BUILD / 'patches.json').read_text())
@@ -395,6 +604,18 @@ def append_module():
     offsets = [entry['offset']+2 for name,entry in symbols.items() if name.startswith('_nv_continue_')]
     assert all(entry['hunk']==3 for name,entry in symbols.items() if name.startswith('_nv_continue_'))
     appended[pos:pos] = pack(1004,len(offsets),0,*offsets,0)
+    global_offsets = [entry['offset']+2 for name,entry in symbols.items()
+                      if name.startswith('_nv_art_global_')]
+    if PLANAR_CACHE:
+        assert len(global_offsets)==12
+        assert all(entry['hunk']==3 for name,entry in symbols.items()
+                   if name.startswith('_nv_art_global_'))
+        appended[pos:pos] = pack(1004,len(global_offsets),2,*global_offsets,0)
+    if GLYPH_CACHE:
+        glyph_offsets=[entry['offset']+2 for name,entry in symbols.items() if name.startswith('_nv_glyph_global_')]
+        assert len(glyph_offsets)==9
+        assert all(entry['hunk']==3 for name,entry in symbols.items() if name.startswith('_nv_glyph_global_'))
+        appended[pos:pos]=pack(1004,len(glyph_offsets),2,*glyph_offsets,0)
     sections = [h for h in module.hunks if h['type_name'] in ('HUNK_CODE','HUNK_DATA','HUNK_BSS')]
     count = 3+len(sections)
     header = pack(1011,0,count,0,count-1)+original[20:32]+b''.join(pack(h['alloc_size']//4) for h in sections)
@@ -453,14 +674,20 @@ def append_module():
     if HYBRID_MIX:
         names += ['max_render_ticks','late_buffers']
         manifest.update(audio_backend='hybrid_stereo_mix',output_buffer_bytes=256,
+            render_statistics=RENDER_STATS,
             output_copy='lookup scaled native0/1 plus centered speech; fixed half headroom',
             idle_audio='native2/3 hardware; native0/1 software',
             active_audio='native0/1 plus speech; native2/3 hardware',
             native_channel0_during_speech='mixed with speech; native1 likewise',
-            render_ahead_max_samples=512,deadline_counter='render wall time >= one buffer',
+            render_ahead_max_samples=512,deadline_counter='render wall time >= one buffer' if RENDER_STATS else None,
             target='experimental hybrid; physical hardware and A500 not certified')
     raw=new_sections[layout['hunk']]['data'][layout['offset']:layout['offset']+2*len(names)]
     manifest['driver_layout']=dict(zip(names,struct.unpack('>'+str(len(names))+'H',raw)))
+    if PLANAR_CACHE:
+        manifest['engine_planar_cache']=dict(data_file='native-planar.dat',capacity=32768,
+            data_sha256='8d50dcb1d06e7e9db98867d68319099883af3bf04d586a6f2d630bd5b2a106a5')
+        if PLANAR_CHIP:
+            manifest['engine_planar_cache']['allow_chip_fallback']=True
     (BUILD / 'module.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(dict(output=str(output),control=symbols['_nv_control'],end=symbols['_nv_driver_end'])))
 

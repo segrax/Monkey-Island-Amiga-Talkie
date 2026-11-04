@@ -144,10 +144,9 @@ static int cia_start(void) {
  }
  return 0;
 }
-static NvU32 cia_sample(struct CiaCount *count,NvU16 overflow) {
- NvU16 counter, prior = master_state();
+static NvU32 cia_sample_locked(struct CiaCount *count,NvU16 overflow) {
+ NvU16 counter;
  NvU32 result, dispatched;
- Disable();
  if (overflow) count->epoch += 65536UL;
  counter = cia_counter();
  /* The audio IRQ can preempt CIA resource dispatch after its pending flag
@@ -161,6 +160,13 @@ static NvU32 cia_sample(struct CiaCount *count,NvU16 overflow) {
  dispatched = count->epoch + (65535UL - counter);
  if ((NvS32)(dispatched - result) > 0) result = dispatched;
  count->ticks = result; count->previous = counter;
+ return result;
+}
+static NvU32 cia_sample(struct CiaCount *count,NvU16 overflow) {
+ NvU16 prior = master_state();
+ NvU32 result;
+ Disable();
+ result = cia_sample_locked(count,overflow);
  Enable(); if (!prior) restore_master_off();
  return result;
 }
@@ -190,6 +196,14 @@ NvU32 nv_clock_now(void) {
  if (!owned) return 0;
  if (owned==3) { system_now(&value);return value.ev_lo; }
  return cia_sample(&cia_count,0);
+}
+NvU32 nv_clock_now_locked(void) {
+ struct EClockVal value;
+ if (!owned) return 0;
+ /* IPL7 also serializes CIA state, but does not imply INTENA master is off.
+  * Keep the system clock's exact master-state restoration on V39+. */
+ if (owned==3) { system_now(&value);return value.ev_lo; }
+ return cia_sample_locked(&cia_count,0);
 }
 void nv_clock_stop(void) {
  NvU16 prior,system_clock;

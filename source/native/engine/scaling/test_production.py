@@ -15,7 +15,11 @@ from unicorn import m68k_const as R
 regs=[getattr(R,'UC_M68K_REG_'+x)for x in ('D0','D1','D2','D3','D4','D5','D6','D7','A0','A1','A2','A3','A4','A5','A6','A7')]
 rng=random.Random(0x15972)
 def fixture(path,layout):
- rd=HunkReader();assert rd.read_file(str(path))==0 and rd.build_segments();bases=([0x100000,0x200000,0x300000,0x400000,0x410000,0x420000,0x430000,0x440000,0xa80000]if layout==0 else[0x180000,0x280000,0x380000,0x480000,0x490000,0x4a0000,0x4b0000,0x4c0000,0xb00000])
+ rd=HunkReader();assert rd.read_file(str(path))==0 and rd.build_segments();bases=([0x100000,0x200000,0x300000,0x400000,0x440000,0x480000,0x4c0000,0x4e0000,0xa80000]if layout==0 else[0x180000,0x280000,0x380000,0x700000,0x740000,0x780000,0x7c0000,0x7e0000,0xb00000])
+ # The assembly code hunk includes the 129 KiB mixing tables. Old 64 KiB
+ # spacing overlapped later hunks and could overwrite the loaded fixture.
+ ranges=[(bases[h['hunk_no']],bases[h['hunk_no']]+h['alloc_size']) for h in rd.hunks if h['type_name'] in ('HUNK_CODE','HUNK_DATA','HUNK_BSS')]
+ assert all(end<=other_start or other_end<=start for i,(start,end) in enumerate(ranges) for other_start,other_end in ranges[i+1:])
  cpu=unicorn.Uc(unicorn.UC_ARCH_M68K,unicorn.UC_MODE_BIG_ENDIAN);cpu.ctl_set_cpu_model(R.UC_CPU_M68K_M68000);cpu.mem_map(0,0x1000000);section=0
  for h in rd.hunks:
   section=h.get('hunk_no',section)

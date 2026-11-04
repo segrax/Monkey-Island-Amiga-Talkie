@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 """Generate the actual map MD5 only after verifying the pinned host SHA256."""
 import argparse
 import hashlib

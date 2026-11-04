@@ -2,6 +2,7 @@
 #include "native_timeline.h"
 
 #ifdef __VBCC__
+#include <stddef.h>
 extern NvU32 nv_divmod16(NvU32 numerator, NvU32 denominator, NvU32 *remainder);
 #endif
 
@@ -41,12 +42,15 @@ static NvU32 divide(NvU32 numerator, NvU32 denominator, NvU32 *remainder) {
 	return quotient;
 }
 
-void nv_paula_advance(struct NvPaula *p, NvU32 clocks) {
-	NvU32 first, steps, left;
-	if (!p->dma) return;
-	first = p->latched_period - p->elapsed;
-	if (clocks < first) { p->elapsed += clocks; return; }
-	clocks -= first;
+#ifdef __VBCC__
+typedef char TimelineEntryLayout[(offsetof(struct NvPaula,elapsed)==20 &&
+ offsetof(struct NvPaula,latched_period)==28 && offsetof(struct NvPaula,dma)==38)?1:-1];
+/* Assembly passes clocks remaining after the first old-period boundary. */
+void nv_paula_advance_cross(__reg("a0") struct NvPaula *p, __reg("d0") NvU32 clocks) {
+#else
+static void nv_paula_advance_cross(struct NvPaula *p, NvU32 clocks) {
+#endif
+	NvU32 steps, left;
 	p->latched_period = p->period;
 	steps = divide(clocks, p->period, &p->elapsed);
 	/* Consume the first old-period sample separately to avoid steps+1 overflow. */
@@ -65,3 +69,13 @@ void nv_paula_advance(struct NvPaula *p, NvU32 clocks) {
 	p->irq_pending = 1;
 	p->latches += 1 + divide(steps, p->active_bytes, &p->index);
 }
+
+#ifndef __VBCC__
+void nv_paula_advance(struct NvPaula *p, NvU32 clocks) {
+	NvU32 first;
+	if (!p->dma) return;
+	first = p->latched_period - p->elapsed;
+	if (clocks < first) { p->elapsed += clocks; return; }
+	nv_paula_advance_cross(p, clocks - first);
+}
+#endif

@@ -41,7 +41,17 @@ def build(source,output,expected):
    if offsets:result+=W(len(offsets),target,*sorted(offsets))
   return result+W(0)
  kernel=(BUILD / 'scaled_kernels.bin').read_bytes();kr={2:[],n+1:[]};cs=capstone.Cs(capstone.CS_ARCH_M68K,capstone.CS_MODE_BIG_ENDIAN|capstone.CS_MODE_M68K_000);cs.detail=True
- for ins in cs.disasm(kernel,0):
+ regions=[];begin=0
+ for lo,hi in sorted(generation.get('embedded_data_ranges',[])):
+  assert begin<=lo<hi<=len(kernel)
+  regions.append((begin,lo));begin=hi
+ regions.append((begin,len(kernel)))
+ instructions=[]
+ for lo,hi in regions:
+  decoded=list(cs.disasm(kernel[lo:hi],lo))
+  assert sum(len(ins.bytes) for ins in decoded)==hi-lo,(lo,hi)
+  instructions.extend(decoded)
+ for ins in instructions:
   operands=[o for o in ins.operands if o.address_mode==M.M68K_AM_ABSOLUTE_DATA_LONG]
   if operands:
    assert len(operands)==1
@@ -49,7 +59,7 @@ def build(source,output,expected):
    if value==0x70000000:kr[n+1].append(ins.address+len(ins.bytes)-4)
    else:
     assert 0<=value<header['hunks'][2]['size'],hex(value);kr[2].append(ins.address+len(ins.bytes)-4)
- assert len(kr[n+1])==4
+ assert len(kr[n+1])==2*generation.get("kernel_variants",3 if generation.get("clear_mask_fast_path") else 2)
  kernel=bytearray(kernel)
  for off in kr[n+1]:kernel[off:off+4]=W(0)
  kernel+=bytes((-len(kernel))%4)

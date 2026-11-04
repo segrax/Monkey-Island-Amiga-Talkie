@@ -1,6 +1,6 @@
 {
   "original_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
-  "sha256": "53b0f07e17dda2a00f0ee67ff44907a7c7db565324e07bab15b7738edc0e3153",
+  "sha256": "2e0a21cdda321e4200b7267f58c545e9aaaaa7c2024ff26717cfda52129923fa",
   "exports": {
     "_nv_native_write_ea0": {
       "hunk": 3,
@@ -12,15 +12,23 @@
     },
     "_nv_stop": {
       "hunk": 3,
-      "offset": 3880
+      "offset": 4038
     },
     "_nv_continue_stop": {
       "hunk": 3,
-      "offset": 3954
+      "offset": 4112
     },
     "_nv_free_chip": {
       "hunk": 3,
-      "offset": 5480
+      "offset": 5736
+    },
+    "_nv_art_global_010": {
+      "hunk": 3,
+      "offset": 6610
+    },
+    "_nv_continue_art_c2p_cleanup": {
+      "hunk": 3,
+      "offset": 7004
     },
     "_nv_native_write_b6a": {
       "hunk": 3,
@@ -36,7 +44,11 @@
     },
     "_nv_native_write_96a": {
       "hunk": 3,
-      "offset": 1856
+      "offset": 1832
+    },
+    "_nv_art_global_011": {
+      "hunk": 3,
+      "offset": 6618
     },
     "_nv_continue__nv_native_write_e82": {
       "hunk": 3,
@@ -52,11 +64,15 @@
     },
     "_nv_hook_resource_clear": {
       "hunk": 3,
-      "offset": 4656
+      "offset": 4814
     },
     "_nv_signal_worker": {
       "hunk": 3,
-      "offset": 5502
+      "offset": 5758
+    },
+    "_nv_art_decoder": {
+      "hunk": 3,
+      "offset": 6272
     },
     "_nv_native_write_e8c": {
       "hunk": 3,
@@ -64,167 +80,219 @@
     },
     "_nv_patch_108c": {
       "hunk": 3,
-      "offset": 2894
+      "offset": 3014
     },
     "_nv_patch_170c": {
       "hunk": 3,
-      "offset": 2990
+      "offset": 3110
     },
     "_nv_patch_0b2c": {
       "hunk": 3,
-      "offset": 3086
+      "offset": 3206
     },
     "_nv_disable_interrupts": {
       "hunk": 3,
-      "offset": 5428
+      "offset": 5684
     },
     "_nv_native_write_dc4": {
       "hunk": 3,
-      "offset": 1724
+      "offset": 1702
     },
     "_nv_patch_09a4": {
       "hunk": 3,
-      "offset": 2654
+      "offset": 2774
     },
     "_nv_patch_1574": {
       "hunk": 3,
-      "offset": 3230
+      "offset": 3350
     },
     "_nv_patch_16c4": {
       "hunk": 3,
-      "offset": 3386
+      "offset": 3506
     },
     "_nv_patch_1094": {
       "hunk": 3,
-      "offset": 3468
+      "offset": 3588
     },
     "_nv_continue_start_script": {
       "hunk": 3,
-      "offset": 4226
+      "offset": 4384
     },
     "_nv_hook_resource_end": {
       "hunk": 3,
-      "offset": 4574
+      "offset": 4732
     },
     "_nv_continue__nv_hook_resource_end": {
       "hunk": 3,
-      "offset": 4650
+      "offset": 4808
     },
     "_nv_hook_conversion_end": {
       "hunk": 3,
-      "offset": 5188
+      "offset": 5346
+    },
+    "_nv_music_priority_exit": {
+      "hunk": 3,
+      "offset": 5534
     },
     "_nv_zero_output": {
       "hunk": 3,
-      "offset": 5312
+      "offset": 5560
     },
     "_nv_copy_output": {
       "hunk": 3,
-      "offset": 5366
+      "offset": 5622
+    },
+    "_nv_driver_end": {
+      "hunk": 3,
+      "offset": 5780
+    },
+    "_nv_continue_art_object": {
+      "hunk": 3,
+      "offset": 6128
+    },
+    "_nv_continue_art_c2p_lut": {
+      "hunk": 3,
+      "offset": 7048
+    },
+    "_nv_continue_art_scope_end": {
+      "hunk": 3,
+      "offset": 7626
     },
     "_nv_continue__nv_native_write_8ae": {
       "hunk": 3,
-      "offset": 1324
+      "offset": 1312
     },
     "_nv_native_write_b0e": {
       "hunk": 3,
-      "offset": 2012
+      "offset": 2060
     },
     "_nv_patch_030e": {
       "hunk": 3,
-      "offset": 2414
+      "offset": 2534
     },
     "_nv_patch_102e": {
       "hunk": 3,
-      "offset": 2558
+      "offset": 2678
     },
     "_nv_patch_0bbe": {
       "hunk": 3,
-      "offset": 2750
+      "offset": 2870
     },
     "_nv_patch_0bfe": {
       "hunk": 3,
-      "offset": 3134
+      "offset": 3254
     },
     "_nv_continue_capture": {
       "hunk": 3,
-      "offset": 3780
+      "offset": 3932
     },
     "_nv_hook_resource_mutate": {
       "hunk": 3,
-      "offset": 4746
+      "offset": 4904
+    },
+    "_nv_continue_art_stripe": {
+      "hunk": 3,
+      "offset": 6264
     },
     "_nv_native_write_d76": {
       "hunk": 3,
-      "offset": 1592
+      "offset": 1572
     },
     "_nv_patch_1696": {
       "hunk": 3,
-      "offset": 3308
+      "offset": 3428
     },
     "_nv_native_write_ac8": {
       "hunk": 3,
-      "offset": 1330
+      "offset": 1318
+    },
+    "_nv_art_dispatch": {
+      "hunk": 3,
+      "offset": 6230
     },
     "_nv_entry": {
       "hunk": 3,
-      "offset": 3622
+      "offset": 3742
     },
     "_nv_continue_entry": {
       "hunk": 3,
-      "offset": 3698
+      "offset": 3850
     },
     "_nv_continue_display": {
       "hunk": 3,
-      "offset": 3874
+      "offset": 4032
+    },
+    "_nv_art_bind_entry": {
+      "hunk": 3,
+      "offset": 6134
+    },
+    "_nv_art_scope_cancel_entry": {
+      "hunk": 3,
+      "offset": 7470
+    },
+    "_nv_art_scope_end_entry": {
+      "hunk": 3,
+      "offset": 7552
     },
     "_nv_music_tick": {
       "hunk": 3,
-      "offset": 5284
+      "offset": 5442
+    },
+    "_nv_art_c2p_call": {
+      "hunk": 3,
+      "offset": 6710
+    },
+    "_nv_art_c2p_kernel": {
+      "hunk": 3,
+      "offset": 7010
+    },
+    "_nv_continue_art_scope_cancel": {
+      "hunk": 3,
+      "offset": 7546
     },
     "_nv_continue_program": {
       "hunk": 3,
-      "offset": 4122
+      "offset": 4280
     },
     "_nv_hook_verb_definition": {
       "hunk": 3,
-      "offset": 4232
+      "offset": 4390
     },
     "_nv_continue__nv_hook_string_definition": {
       "hunk": 3,
-      "offset": 4390
+      "offset": 4548
     },
     "_nv_hook_actor_definition": {
       "hunk": 3,
-      "offset": 4396
+      "offset": 4554
     },
     "_nv_continue__nv_hook_actor_definition": {
       "hunk": 3,
-      "offset": 4472
+      "offset": 4630
     },
     "_nv_continue__nv_hook_resource_begin": {
       "hunk": 3,
-      "offset": 4568
+      "offset": 4726
     },
     "_nv_hook_conversion_begin": {
       "hunk": 3,
-      "offset": 4836
+      "offset": 4994
     },
     "_nv_continue__nv_hook_conversion_begin": {
       "hunk": 3,
-      "offset": 4916
+      "offset": 5074
     },
     "_nv_hook_load_begin": {
       "hunk": 3,
-      "offset": 5012
+      "offset": 5170
     },
     "_nv_continue__nv_hook_load_begin": {
       "hunk": 3,
-      "offset": 5088
+      "offset": 5246
     },
     "_nv_hook_load_return": {
       "hunk": 3,
-      "offset": 5094
+      "offset": 5252
     },
     "_nv_continue__nv_native_write_ea0": {
       "hunk": 3,
@@ -236,7 +304,11 @@
     },
     "_nv_alloc_chip": {
       "hunk": 3,
-      "offset": 5456
+      "offset": 5712
+    },
+    "_nv_art_global_000": {
+      "hunk": 3,
+      "offset": 6300
     },
     "_nv_continue__nv_native_write_b6a": {
       "hunk": 3,
@@ -248,19 +320,23 @@
     },
     "_nv_continue__nv_native_write_84a": {
       "hunk": 3,
-      "offset": 1196
+      "offset": 1190
     },
     "_nv_continue__nv_native_write_96a": {
       "hunk": 3,
-      "offset": 2006
+      "offset": 2054
     },
     "_nv_clear_volume_1": {
       "hunk": 3,
-      "offset": 2168
+      "offset": 2288
     },
     "_nv_irq": {
       "hunk": 3,
-      "offset": 5264
+      "offset": 5422
+    },
+    "_nv_art_global_001": {
+      "hunk": 3,
+      "offset": 6330
     },
     "_nv_native_write_e82": {
       "hunk": 3,
@@ -276,11 +352,15 @@
     },
     "_nv_clear_volume_2": {
       "hunk": 3,
-      "offset": 2250
+      "offset": 2370
     },
     "_nv_continue__nv_hook_resource_clear": {
       "hunk": 3,
-      "offset": 4740
+      "offset": 4898
+    },
+    "_nv_art_global_002": {
+      "hunk": 3,
+      "offset": 6352
     },
     "_nv_continue__nv_native_write_e8c": {
       "hunk": 3,
@@ -288,147 +368,447 @@
     },
     "_nv_native_write_d5c": {
       "hunk": 3,
-      "offset": 1462
+      "offset": 1448
     },
     "_nv_clear_volume_3": {
       "hunk": 3,
-      "offset": 2332
+      "offset": 2452
     },
     "_nv_patch_10ac": {
       "hunk": 3,
-      "offset": 2606
+      "offset": 2726
     },
     "_nv_patch_16ac": {
       "hunk": 3,
-      "offset": 2942
+      "offset": 3062
     },
     "_nv_patch_09ac": {
       "hunk": 3,
-      "offset": 3038
+      "offset": 3158
     },
     "_nv_enable_interrupts": {
       "hunk": 3,
-      "offset": 5442
+      "offset": 5698
+    },
+    "_nv_art_global_003": {
+      "hunk": 3,
+      "offset": 6362
     },
     "_nv_continue__nv_native_write_dc4": {
       "hunk": 3,
-      "offset": 1850
+      "offset": 1826
     },
     "_nv_patch_0b24": {
       "hunk": 3,
-      "offset": 2702
+      "offset": 2822
     },
     "_nv_patch_1084": {
       "hunk": 3,
-      "offset": 3182
+      "offset": 3302
     },
     "_nv_segment": {
       "hunk": 3,
-      "offset": 3960
+      "offset": 4118
     },
     "_nv_start_script": {
       "hunk": 3,
-      "offset": 4128
+      "offset": 4286
+    },
+    "_nv_continue_art_bind": {
+      "hunk": 3,
+      "offset": 6224
+    },
+    "_nv_art_global_004": {
+      "hunk": 3,
+      "offset": 6368
+    },
+    "_nv_art_decoder_end": {
+      "hunk": 3,
+      "offset": 6710
     },
     "_nv_native_write_8ae": {
       "hunk": 3,
-      "offset": 1202
+      "offset": 1196
     },
     "_nv_continue__nv_native_write_b0e": {
       "hunk": 3,
-      "offset": 2162
+      "offset": 2282
     },
     "_nv_patch_0aae": {
       "hunk": 3,
-      "offset": 2462
+      "offset": 2582
     },
     "_nv_patch_0b3e": {
       "hunk": 3,
-      "offset": 2510
+      "offset": 2630
     },
     "_nv_capture": {
       "hunk": 3,
-      "offset": 3704
+      "offset": 3856
     },
     "_nv_continue__nv_hook_resource_mutate": {
       "hunk": 3,
-      "offset": 4830
+      "offset": 4988
+    },
+    "_nv_art_global_005": {
+      "hunk": 3,
+      "offset": 6410
     },
     "_nv_continue__nv_native_write_d76": {
       "hunk": 3,
-      "offset": 1718
+      "offset": 1696
     },
     "_nv_patch_0bf6": {
       "hunk": 3,
-      "offset": 2798
+      "offset": 2918
     },
     "_nv_patch_1026": {
       "hunk": 3,
-      "offset": 2846
+      "offset": 2966
+    },
+    "_nv_art_global_006": {
+      "hunk": 3,
+      "offset": 6434
+    },
+    "_nv_art_global_007": {
+      "hunk": 3,
+      "offset": 6534
     },
     "_nv_continue__nv_native_write_ac8": {
       "hunk": 3,
-      "offset": 1456
+      "offset": 1442
     },
     "_nv_patch_1668": {
       "hunk": 3,
-      "offset": 3542
+      "offset": 3662
+    },
+    "_nv_art_global_008": {
+      "hunk": 3,
+      "offset": 6598
     },
     "_nv_display": {
       "hunk": 3,
-      "offset": 3786
+      "offset": 3938
+    },
+    "_nv_music_priority_entry": {
+      "hunk": 3,
+      "offset": 5470
+    },
+    "_nv_continue_music_priority": {
+      "hunk": 3,
+      "offset": 5528
+    },
+    "_nv_art_prewarm_entry": {
+      "hunk": 3,
+      "offset": 5798
+    },
+    "_nv_art_object_entry": {
+      "hunk": 3,
+      "offset": 5908
+    },
+    "_nv_art_global_009": {
+      "hunk": 3,
+      "offset": 6604
+    },
+    "_nv_continue_art_c2p_original": {
+      "hunk": 3,
+      "offset": 6994
     },
     "_nv_program": {
       "hunk": 3,
-      "offset": 4036
+      "offset": 4194
+    },
+    "_nv_continue_art_prewarm": {
+      "hunk": 3,
+      "offset": 5902
     },
     "_nv_continue__nv_hook_verb_definition": {
       "hunk": 3,
-      "offset": 4308
+      "offset": 4466
     },
     "_nv_hook_string_definition": {
       "hunk": 3,
-      "offset": 4314
+      "offset": 4472
     },
     "_nv_hook_resource_begin": {
       "hunk": 3,
-      "offset": 4478
+      "offset": 4636
     },
     "_nv_hook_save_return": {
       "hunk": 3,
-      "offset": 4922
+      "offset": 5080
+    },
+    "_nv_presence_bits": {
+      "hunk": 3,
+      "offset": 7632
     },
     "_nv_divmod16": {
       "hunk": 3,
-      "offset": 5524
+      "offset": 15824
+    },
+    "_nv_paula_advance": {
+      "hunk": 3,
+      "offset": 15860
+    },
+    "_nv_driver_write": {
+      "hunk": 3,
+      "offset": 16036
+    },
+    "_nv_read_cia_counter": {
+      "hunk": 3,
+      "offset": 16340
+    },
+    "_nv_mmio_read_word": {
+      "hunk": 3,
+      "offset": 16320
+    },
+    "_nv_mmio_read_byte": {
+      "hunk": 3,
+      "offset": 16330
+    },
+    "_nv_hybrid_channel_runs": {
+      "hunk": 3,
+      "offset": 18614
     },
     "_nv_hybrid_speech": {
       "hunk": 3,
-      "offset": 5664
+      "offset": 18292
+    },
+    "_nv_hybrid_speech_only_unity": {
+      "hunk": 3,
+      "offset": 21436
+    },
+    "_nv_hybrid_speech_unity_bytes": {
+      "hunk": 3,
+      "offset": 21302
+    },
+    "_nv_hybrid_speech_only_lut": {
+      "hunk": 3,
+      "offset": 18508
+    },
+    "_nv_hybrid_channel_ahead": {
+      "hunk": 3,
+      "offset": 23326
     },
     "_nv_hybrid_half": {
       "hunk": 3,
-      "offset": 5730
+      "offset": 18462
+    },
+    "_nv_hybrid_speech_unity": {
+      "hunk": 3,
+      "offset": 20906
+    },
+    "_nv_hybrid_speech_only": {
+      "hunk": 3,
+      "offset": 18496
+    },
+    "_nv_hybrid_fused_unity": {
+      "hunk": 3,
+      "offset": 21582
     },
     "_nv_hybrid_channel": {
       "hunk": 3,
-      "offset": 5560
+      "offset": 16368
     },
     "_nv_speech_words": {
       "hunk": 3,
-      "offset": 39044
+      "offset": 56924
     },
     "_nv_amplitude": {
       "hunk": 3,
-      "offset": 5764
+      "offset": 23644
     },
     "_nv_half_amplitude": {
       "hunk": 3,
-      "offset": 22404
+      "offset": 40284
     },
     "_nv_average": {
       "hunk": 3,
-      "offset": 72324
+      "offset": 90204
+    },
+    "_nv_costume_exec": {
+      "hunk": 3,
+      "offset": 155740
+    },
+    "_nv_costume_alloc": {
+      "hunk": 3,
+      "offset": 155746
+    },
+    "_nv_costume_free": {
+      "hunk": 3,
+      "offset": 155770
+    },
+    "_nv_costume_flush": {
+      "hunk": 3,
+      "offset": 155792
+    },
+    "_nv_art_exec": {
+      "hunk": 3,
+      "offset": 155808
+    },
+    "_nv_art_free": {
+      "hunk": 3,
+      "offset": 155878
+    },
+    "_nv_art_file_close": {
+      "hunk": 3,
+      "offset": 155950
+    },
+    "_nv_art_file_open": {
+      "hunk": 3,
+      "offset": 155900
+    },
+    "_nv_art_alloc": {
+      "hunk": 3,
+      "offset": 155830
+    },
+    "_nv_art_read_at": {
+      "hunk": 3,
+      "offset": 155992
+    },
+    "_nv_art_row": {
+      "hunk": 3,
+      "offset": 155814
+    },
+    "_nv_art_alloc_any": {
+      "hunk": 3,
+      "offset": 155854
+    },
+    "_nv_art_checksum": {
+      "hunk": 3,
+      "offset": 156076
+    },
+    "_nv_art_indices": {
+      "hunk": 3,
+      "offset": 156180
+    },
+    "_nv_glyph_global_000": {
+      "hunk": 3,
+      "offset": 156466
+    },
+    "_nv_glyph_global_001": {
+      "hunk": 3,
+      "offset": 156474
+    },
+    "_nv_glyph_global_002": {
+      "hunk": 3,
+      "offset": 156480
+    },
+    "_nv_glyph_global_003": {
+      "hunk": 3,
+      "offset": 156490
+    },
+    "_nv_glyph_global_004": {
+      "hunk": 3,
+      "offset": 156508
+    },
+    "_nv_glyph_scope_exit": {
+      "hunk": 3,
+      "offset": 156668
+    },
+    "_nv_continue_glyph_scope_exit": {
+      "hunk": 3,
+      "offset": 156742
+    },
+    "_nv_glyph_global_005": {
+      "hunk": 3,
+      "offset": 156514
+    },
+    "_nv_glyph_global_006": {
+      "hunk": 3,
+      "offset": 156528
+    },
+    "_nv_glyph_global_007": {
+      "hunk": 3,
+      "offset": 156538
+    },
+    "_nv_glyph_global_008": {
+      "hunk": 3,
+      "offset": 156554
+    },
+    "_nv_glyph_load_entry": {
+      "hunk": 3,
+      "offset": 156224
+    },
+    "_nv_glyph_entry": {
+      "hunk": 3,
+      "offset": 156324
+    },
+    "_nv_glyph_scope_entry": {
+      "hunk": 3,
+      "offset": 156570
+    },
+    "_nv_continue_glyph_scope_nonzero": {
+      "hunk": 3,
+      "offset": 156656
+    },
+    "_nv_continue_glyph_scope_zero": {
+      "hunk": 3,
+      "offset": 156662
+    },
+    "_nv_continue_glyph_load": {
+      "hunk": 3,
+      "offset": 156318
+    },
+    "_nv_glyph_fallback": {
+      "hunk": 3,
+      "offset": 156452
+    },
+    "_nv_glyph_close": {
+      "hunk": 3,
+      "offset": 156818
+    },
+    "_nv_glyph_read": {
+      "hunk": 3,
+      "offset": 156860
+    },
+    "_nv_glyph_open": {
+      "hunk": 3,
+      "offset": 156748
+    },
+    "_nv_glyph_same": {
+      "hunk": 3,
+      "offset": 156904
+    },
+    "_nv_art_decoder_fallback": {
+      "hunk": 3,
+      "offset": 6260
+    },
+    "_nv_project_generic_ready": {
+      "hunk": 3,
+      "offset": 16416
+    },
+    "_nv_project_asr_ready": {
+      "hunk": 3,
+      "offset": 19786
+    },
+    "_nv_project_run_offsets": {
+      "hunk": 3,
+      "offset": 18912
+    },
+    "_nv_asr_run_offsets": {
+      "hunk": 3,
+      "offset": 19354
+    },
+    "_nv_asr_span_offsets": {
+      "hunk": 3,
+      "offset": 19548
+    },
+    "_nv_project_run_table": {
+      "hunk": 3,
+      "offset": 18926
+    },
+    "_nv_asr_run_table": {
+      "hunk": 3,
+      "offset": 19360
+    },
+    "_nv_asr_span_table": {
+      "hunk": 3,
+      "offset": 19554
+    },
+    "_nv_project_runs_ready": {
+      "hunk": 3,
+      "offset": 18808
     },
     "_nv_paula_pointer": {
       "hunk": 4,
@@ -478,233 +858,393 @@
       "hunk": 4,
       "offset": 404
     },
-    "_nv_paula_advance": {
+    "_nv_paula_advance_cross": {
       "hunk": 4,
       "offset": 1844
     },
-    "_nv_driver_end": {
+    "_nv_quiet_layout": {
       "hunk": 4,
-      "offset": 6792
-    },
-    "_nv_driver_write": {
-      "hunk": 4,
-      "offset": 2492
-    },
-    "_nv_driver_volume": {
-      "hunk": 4,
-      "offset": 3012
-    },
-    "_nv_driver_clear_native_volume": {
-      "hunk": 4,
-      "offset": 3240
-    },
-    "_nv_driver_clear_volume": {
-      "hunk": 4,
-      "offset": 3276
+      "offset": 14924
     },
     "_nv_driver_service": {
       "hunk": 4,
-      "offset": 4756
+      "offset": 1988
+    },
+    "_nv_driver_volume": {
+      "hunk": 4,
+      "offset": 3212
+    },
+    "_nv_driver_clear_native_volume": {
+      "hunk": 4,
+      "offset": 3688
+    },
+    "_nv_driver_clear_volume": {
+      "hunk": 4,
+      "offset": 3924
+    },
+    "_nv_driver_write_virtual": {
+      "hunk": 4,
+      "offset": 2616
     },
     "_nv_driver_install": {
       "hunk": 4,
-      "offset": 4824
+      "offset": 4116
     },
     "_nv_driver_intena": {
       "hunk": 4,
-      "offset": 6392
+      "offset": 7516
     },
     "_nv_driver_irq": {
       "hunk": 4,
-      "offset": 6516
+      "offset": 7628
     },
     "_nv_game_skip_script": {
       "hunk": 4,
-      "offset": 2028
+      "offset": 2564
     },
     "_nv_driver_start": {
       "hunk": 4,
-      "offset": 4868
+      "offset": 4160
+    },
+    "_nv_driver_audio_end": {
+      "hunk": 4,
+      "offset": 8664
     },
     "_nv_driver_layout": {
       "hunk": 4,
-      "offset": 7060
+      "offset": 14952
+    },
+    "_nv_phase_layout": {
+      "hunk": 4,
+      "offset": 14988
     },
     "_nv_driver_restore": {
       "hunk": 4,
-      "offset": 6500
+      "offset": 7596
+    },
+    "_nv_hybrid_channel_ahead_fallback": {
+      "hunk": 4,
+      "offset": 3944
     },
     "_nv_driver_control": {
       "hunk": 4,
-      "offset": 5588
+      "offset": 5160
     },
     "_nv_game_site": {
       "hunk": 4,
-      "offset": 7408
+      "offset": 15304
     },
     "_nv_dialogue_stop": {
       "hunk": 4,
-      "offset": 8388
+      "offset": 16284
     },
     "_nv_dialogue_segment": {
       "hunk": 4,
-      "offset": 7920
+      "offset": 15816
     },
     "_nv_dialogue_capture": {
       "hunk": 4,
-      "offset": 7704
+      "offset": 15600
     },
     "_nv_dialogue_display": {
       "hunk": 4,
-      "offset": 8280
+      "offset": 16176
     },
     "_nv_dialogue_program": {
       "hunk": 4,
-      "offset": 7540
+      "offset": 15436
     },
     "_nv_resource_end": {
       "hunk": 4,
-      "offset": 9412
+      "offset": 17308
     },
     "_nv_resource_mutate": {
       "hunk": 4,
-      "offset": 9656
+      "offset": 17552
     },
     "_nv_resource_begin": {
       "hunk": 4,
-      "offset": 9072
+      "offset": 16968
     },
     "_nv_conversion_begin": {
       "hunk": 4,
-      "offset": 9688
+      "offset": 17584
     },
     "_nv_resource_clear": {
       "hunk": 4,
-      "offset": 9596
+      "offset": 17492
     },
     "_nv_provenance_clear": {
       "hunk": 4,
-      "offset": 12184
+      "offset": 20080
     },
     "_nv_provenance_reset": {
       "hunk": 4,
-      "offset": 8736
+      "offset": 16632
     },
     "_nv_conversion_end": {
       "hunk": 4,
-      "offset": 9932
+      "offset": 17828
     },
     "_nv_provenance_export": {
       "hunk": 4,
-      "offset": 12328
+      "offset": 20224
     },
     "_nv_provenance_import": {
       "hunk": 4,
-      "offset": 12920
+      "offset": 20816
     },
     "_nv_provenance_program": {
       "hunk": 4,
-      "offset": 8764
+      "offset": 16660
     },
     "_nv_definition_begin": {
       "hunk": 4,
-      "offset": 8904
+      "offset": 16800
     },
     "_nv_provenance_origin": {
       "hunk": 4,
-      "offset": 10792
+      "offset": 18688
     },
     "_nv_metadata_export": {
       "hunk": 4,
-      "offset": 14324
+      "offset": 22220
     },
     "_nv_metadata_import": {
       "hunk": 4,
-      "offset": 14392
+      "offset": 22288
     },
     "_nv_metadata_save": {
       "hunk": 4,
-      "offset": 14532
+      "offset": 22428
     },
     "_nv_metadata_load_begin": {
       "hunk": 4,
-      "offset": 14656
+      "offset": 22552
     },
     "_nv_metadata_clear": {
       "hunk": 4,
-      "offset": 14504
+      "offset": 22400
     },
     "_nv_metadata_load": {
       "hunk": 4,
-      "offset": 14684
+      "offset": 22580
     },
     "_nv_game_metadata_commit": {
       "hunk": 4,
-      "offset": 17056
+      "offset": 25336
     },
     "_nv_game_active": {
       "hunk": 4,
-      "offset": 15688
+      "offset": 23928
     },
     "_nv_game_metadata_save": {
       "hunk": 4,
-      "offset": 16912
+      "offset": 25192
     },
     "_nv_game_set_policy": {
       "hunk": 4,
-      "offset": 14856
+      "offset": 23096
     },
     "_nv_game_play": {
       "hunk": 4,
-      "offset": 15808
+      "offset": 24048
     },
     "_nv_game_poll": {
       "hunk": 4,
-      "offset": 15440
+      "offset": 23680
     },
     "_nv_game_metadata_load": {
       "hunk": 4,
-      "offset": 16952
+      "offset": 25232
+    },
+    "_nv_presence_possible": {
+      "hunk": 4,
+      "offset": 22752
     },
     "_nv_game_cancel": {
       "hunk": 4,
-      "offset": 16016
+      "offset": 24296
     },
     "_nv_game_program": {
       "hunk": 4,
-      "offset": 14928
+      "offset": 23168
     },
     "_nv_game_shutdown": {
       "hunk": 4,
-      "offset": 16052
+      "offset": 24332
     },
     "_nv_policy_enter": {
       "hunk": 4,
-      "offset": 18540
+      "offset": 26820
     },
     "_nv_policy_init": {
       "hunk": 4,
-      "offset": 17636
+      "offset": 25916
     },
     "_nv_policy_collect": {
       "hunk": 4,
-      "offset": 17708
+      "offset": 25988
     },
     "_nv_policy_selector_valid": {
       "hunk": 4,
-      "offset": 18948
+      "offset": 27228
     },
     "_nv_clock_start": {
       "hunk": 4,
-      "offset": 20504
+      "offset": 28824
     },
     "_nv_clock_stop": {
       "hunk": 4,
-      "offset": 20832
+      "offset": 29220
+    },
+    "_nv_clock_now_locked": {
+      "hunk": 4,
+      "offset": 29152
     },
     "_nv_clock_now": {
       "hunk": 4,
-      "offset": 20764
+      "offset": 29084
+    },
+    "_nv_costume_cache_lease_cancel": {
+      "hunk": 4,
+      "offset": 30316
+    },
+    "_nv_costume_cache_overlap": {
+      "hunk": 4,
+      "offset": 29676
+    },
+    "_nv_costume_cache_stop": {
+      "hunk": 4,
+      "offset": 31104
+    },
+    "_nv_costume_cache_lease_commit": {
+      "hunk": 4,
+      "offset": 30252
+    },
+    "_nv_costume_cache_start": {
+      "hunk": 4,
+      "offset": 30704
+    },
+    "_nv_costume_cache_lease": {
+      "hunk": 4,
+      "offset": 29996
+    },
+    "_nv_costume_cache_finish": {
+      "hunk": 4,
+      "offset": 34648
+    },
+    "_nv_costume_cache_lease_capacity": {
+      "hunk": 4,
+      "offset": 30224
+    },
+    "_nv_costume_cache_begin": {
+      "hunk": 4,
+      "offset": 33372
+    },
+    "_nv_art_validate": {
+      "hunk": 4,
+      "offset": 35244
+    },
+    "_nv_art_c2p_indices": {
+      "hunk": 4,
+      "offset": 40984
+    },
+    "_nv_art_object": {
+      "hunk": 4,
+      "offset": 39944
+    },
+    "_nv_art_room": {
+      "hunk": 4,
+      "offset": 38896
+    },
+    "_nv_art_runtime_overlap": {
+      "hunk": 4,
+      "offset": 36456
+    },
+    "_nv_art_stop": {
+      "hunk": 4,
+      "offset": 37204
+    },
+    "_nv_art_start": {
+      "hunk": 4,
+      "offset": 37388
+    },
+    "_nv_art_bind": {
+      "hunk": 4,
+      "offset": 40352
+    },
+    "_nv_art_prewarm": {
+      "hunk": 4,
+      "offset": 39328
+    },
+    "_nv_art_c2p_span": {
+      "hunk": 4,
+      "offset": 40580
+    },
+    "_nv_art_game_c2p": {
+      "hunk": 4,
+      "offset": 48304
+    },
+    "_nv_art_game_room": {
+      "hunk": 4,
+      "offset": 41708
+    },
+    "_nv_art_game_prewarm": {
+      "hunk": 4,
+      "offset": 41780
+    },
+    "_nv_art_game_stop": {
+      "hunk": 4,
+      "offset": 41636
+    },
+    "_nv_art_game_start": {
+      "hunk": 4,
+      "offset": 41052
+    },
+    "_nv_art_game_object": {
+      "hunk": 4,
+      "offset": 42404
+    },
+    "_nv_art_game_bind": {
+      "hunk": 4,
+      "offset": 43960
+    },
+    "_nv_art_game_scope_cancel": {
+      "hunk": 4,
+      "offset": 49940
+    },
+    "_nv_art_game_scope_begin": {
+      "hunk": 4,
+      "offset": 49960
+    },
+    "_nv_glyph_lookup": {
+      "hunk": 4,
+      "offset": 56624
+    },
+    "_nv_glyph_layout": {
+      "hunk": 4,
+      "offset": 61320
+    },
+    "_nv_glyph_load": {
+      "hunk": 4,
+      "offset": 51544
+    },
+    "_nv_glyph_scope_cancel": {
+      "hunk": 4,
+      "offset": 61328
+    },
+    "_nv_glyph_scope_arm": {
+      "hunk": 4,
+      "offset": 61348
+    },
+    "_nv_glyph_scope_begin": {
+      "hunk": 4,
+      "offset": 61752
+    },
+    "_nv_glyph_scope_lookup": {
+      "hunk": 4,
+      "offset": 61812
     },
     "_nv_control": {
       "hunk": 5,
@@ -714,72 +1254,224 @@
       "hunk": 6,
       "offset": 4
     },
+    "_nv_music_owner": {
+      "hunk": 6,
+      "offset": 428
+    },
+    "_nv_quiet_muted": {
+      "hunk": 6,
+      "offset": 432
+    },
+    "_nv_quiet_prepare_refused": {
+      "hunk": 6,
+      "offset": 440
+    },
+    "_nv_quiet_off_tick": {
+      "hunk": 6,
+      "offset": 452
+    },
     "_nv_skipped_pirate_checks": {
       "hunk": 6,
-      "offset": 416
+      "offset": 512
+    },
+    "_nv_quiet_wait_ticks": {
+      "hunk": 6,
+      "offset": 460
+    },
+    "_nv_quiet_max_wait_ticks": {
+      "hunk": 6,
+      "offset": 464
+    },
+    "_nv_quiet": {
+      "hunk": 6,
+      "offset": 472
+    },
+    "_nv_quiet_period_bound": {
+      "hunk": 6,
+      "offset": 444
+    },
+    "_nv_quiet_attach_refused": {
+      "hunk": 6,
+      "offset": 468
     },
     "_SysBase": {
       "hunk": 6,
       "offset": 0
     },
+    "_nv_quiet_notify": {
+      "hunk": 6,
+      "offset": 436
+    },
     "_nv_stereo_bank": {
       "hunk": 6,
-      "offset": 352
+      "offset": 364
     },
     "_nv_dialogue_segments": {
       "hunk": 6,
-      "offset": 1220
+      "offset": 1316
     },
     "_nv_dialogue_holds": {
       "hunk": 6,
-      "offset": 1224
+      "offset": 1320
     },
     "_nv_dialogue_cancels": {
       "hunk": 6,
-      "offset": 1228
+      "offset": 1324
     },
     "_nv_dialogue_valid": {
       "hunk": 6,
-      "offset": 1208
+      "offset": 1304
     },
     "_nv_dialogue_context": {
       "hunk": 6,
-      "offset": 420
+      "offset": 516
     },
     "_nv_dialogue_captures": {
       "hunk": 6,
-      "offset": 1216
+      "offset": 1312
     },
     "_nv_dialogue_next_segment": {
       "hunk": 6,
-      "offset": 1212
+      "offset": 1308
     },
     "_nv_metadata_loads": {
       "hunk": 6,
-      "offset": 7884
+      "offset": 7980
     },
     "_nv_metadata_saves": {
       "hunk": 6,
-      "offset": 7880
+      "offset": 7976
     },
     "_nv_metadata_rejected": {
       "hunk": 6,
-      "offset": 7888
+      "offset": 7984
+    },
+    "_nv_presence_enabled": {
+      "hunk": 6,
+      "offset": 14564
     },
     "_nv_clock_hardware": {
       "hunk": 6,
-      "offset": 17788
+      "offset": 17888
     },
-    "_scaled_one": {
+    "_nv_costume_cache": {
+      "hunk": 6,
+      "offset": 18000
+    },
+    "_nv_art_columns": {
+      "hunk": 6,
+      "offset": 18340
+    },
+    "_nv_art": {
+      "hunk": 6,
+      "offset": 18196
+    },
+    "_nv_art_warm": {
+      "hunk": 6,
+      "offset": 18280
+    },
+    "_nv_art_c2p": {
+      "hunk": 6,
+      "offset": 19396
+    },
+    "_nv_art_decode": {
+      "hunk": 6,
+      "offset": 19364
+    },
+    "_nv_art_object_gate": {
+      "hunk": 6,
+      "offset": 19408
+    },
+    "_nv_art_decode_ready": {
+      "hunk": 6,
+      "offset": 19392
+    },
+    "_nv_art_dos": {
+      "hunk": 6,
+      "offset": 19668
+    },
+    "_nv_glyph": {
+      "hunk": 6,
+      "offset": 19672
+    },
+    "_nv_glyph_dos": {
       "hunk": 7,
       "offset": 0
     },
+    "_scaled_one": {
+      "hunk": 8,
+      "offset": 0
+    },
     "_scaled_two": {
-      "hunk": 7,
-      "offset": 458
+      "hunk": 8,
+      "offset": 14620
     },
     "_stripe_decoder": {
       "hunk": 9,
+      "offset": 0
+    },
+    "_fread_fast": {
+      "hunk": 11,
+      "offset": 0
+    },
+    "_fread_original": {
+      "hunk": 11,
+      "offset": 266
+    },
+    "_decode_fast": {
+      "hunk": 11,
+      "offset": 378
+    },
+    "_mirrored_x_offset": {
+      "hunk": 12,
+      "offset": 0
+    },
+    "_mirrored_x_extent": {
+      "hunk": 12,
+      "offset": 144
+    },
+    "_x_offset": {
+      "hunk": 12,
+      "offset": 280
+    },
+    "_x_extent": {
+      "hunk": 12,
+      "offset": 424
+    },
+    "_y_offset": {
+      "hunk": 12,
+      "offset": 560
+    },
+    "_y_extent": {
+      "hunk": 12,
+      "offset": 704
+    },
+    "_scaled_zero": {
+      "hunk": 13,
+      "offset": 0
+    },
+    "_engine_fill": {
+      "hunk": 14,
+      "offset": 0
+    },
+    "_engine_copy": {
+      "hunk": 14,
+      "offset": 100
+    },
+    "_engine_font2": {
+      "hunk": 15,
+      "offset": 0
+    },
+    "_engine_font_original": {
+      "hunk": 15,
+      "offset": 978
+    },
+    "_engine_find_slot": {
+      "hunk": 16,
+      "offset": 0
+    },
+    "_engine_mask_rle": {
+      "hunk": 17,
       "offset": 0
     }
   },
@@ -1239,6 +1931,89 @@
       "continuation": 58192,
       "terminal": true,
       "expected": "200b265f4e5d4e75"
+    },
+    {
+      "address": 5688,
+      "size": 10,
+      "symbol": "_nv_music_priority_entry",
+      "jump": true,
+      "continuation": 5706,
+      "terminal": false,
+      "replayed_ack_address": 5698,
+      "replayed_ack_expected": "33fc200000dff09c",
+      "expected": "48e780024a3900bfdd00"
+    },
+    {
+      "address": 5722,
+      "size": 6,
+      "symbol": "_nv_music_priority_exit",
+      "jump": true,
+      "terminal": true,
+      "expected": "4cdf40014e73"
+    },
+    {
+      "address": 20740,
+      "size": 8,
+      "symbol": "_nv_art_scope_cancel_entry",
+      "jump": true,
+      "continuation": 20748,
+      "expected": "4e55fff448e73f20"
+    },
+    {
+      "address": 21000,
+      "size": 6,
+      "symbol": "_nv_art_scope_end_entry",
+      "jump": true,
+      "continuation": 21006,
+      "expected": "4cdf04fc4e5d"
+    },
+    {
+      "address": 15226,
+      "size": 6,
+      "symbol": "_nv_art_prewarm_entry",
+      "jump": true,
+      "continuation": 15232,
+      "expected": "7000102d0009"
+    },
+    {
+      "address": 20842,
+      "size": 8,
+      "symbol": "_nv_art_object_entry",
+      "jump": true,
+      "continuation": 20990,
+      "expected": "3b40fff66000008e"
+    },
+    {
+      "address": 19140,
+      "size": 6,
+      "symbol": "_nv_art_bind_entry",
+      "jump": true,
+      "continuation": 19146,
+      "expected": "7000102c5c38"
+    },
+    {
+      "address": 19378,
+      "size": 6,
+      "symbol": "_nv_art_dispatch",
+      "jump": true,
+      "continuation": null,
+      "expected": "66044eba0226"
+    },
+    {
+      "address": 85618,
+      "size": 8,
+      "symbol": "_nv_art_c2p_call",
+      "jump": true,
+      "continuation": 85626,
+      "expected": "4eba051c4fef000e"
+    },
+    {
+      "address": 5384,
+      "size": 2,
+      "expected": "4290",
+      "replacement": "4294",
+      "symbol": "original_pcm_init_clear_A4",
+      "private_diagnostic": true
     }
   ],
   "voice_abi_version": 1,
@@ -1271,9 +2046,10 @@
   "music_ducking": false,
   "render_ahead_max_samples": 512,
   "target": "experimental hybrid; physical hardware and A500 not certified",
-  "deadline_counter": "render wall time >= one buffer",
+  "render_statistics": false,
+  "deadline_counter": null,
   "driver_layout": {
-    "size": 348,
+    "size": 360,
     "native": 0,
     "buffers": 216,
     "right": 224,
@@ -1292,25 +2068,389 @@
     "max_render_ticks": 268,
     "late_buffers": 272
   },
-  "source_module_sha256": "851cfb5446d5917decb0f5adc24f694e1e411573b1a1a1d3f2cabb22be5151c1",
-  "original_relocations_outside_engine_patch_footprints_retained": true,
-  "engine_removed_original_relocations": [
-    {
-      "source_hunk": 0,
-      "target_hunk": 2,
-      "offset": 88308
+  "engine_planar_cache": {
+    "data_file": "native-planar.dat",
+    "capacity": 32768,
+    "data_sha256": "8d50dcb1d06e7e9db98867d68319099883af3bf04d586a6f2d630bd5b2a106a5",
+    "allow_chip_fallback": true
+  },
+  "costume_cache": {
+    "sha256": "a9ad4b8343681dcb26294fb63a7cc9199f75b472ad75d3e10916af191ca931c8",
+    "source_sha256": "5ee0c1ded327929ab7142dda8bd331d83b0997389f964e208c8b84a360355ff8",
+    "kernel_hunk": 8,
+    "prefix_hunk": 9,
+    "kernel_relocations": {
+      "4": [
+        4270,
+        9454,
+        5422,
+        10606
+      ],
+      "6": [
+        4310,
+        4344,
+        4360,
+        4410,
+        5236,
+        5292,
+        5310,
+        5318,
+        5346,
+        5354,
+        5410,
+        5416,
+        9494,
+        9528,
+        9544,
+        9594,
+        10420,
+        10476,
+        10494,
+        10502,
+        10530,
+        10538,
+        10594,
+        10600,
+        25700,
+        25744
+      ],
+      "2": [
+        8,
+        20,
+        26,
+        42,
+        54,
+        64,
+        82,
+        98,
+        108,
+        150,
+        164,
+        176,
+        184,
+        236,
+        276,
+        282,
+        288,
+        294,
+        300,
+        306,
+        312,
+        320,
+        326,
+        366,
+        376,
+        384,
+        392,
+        402,
+        410,
+        976,
+        1054,
+        1090,
+        1096,
+        1102,
+        1112,
+        1122,
+        1132,
+        1142,
+        1168,
+        4126,
+        4132,
+        4138,
+        4144,
+        4150,
+        4156,
+        4162,
+        4170,
+        4176,
+        4216,
+        4226,
+        4234,
+        4242,
+        4252,
+        4316,
+        4326,
+        4336,
+        4374,
+        4390,
+        4444,
+        5010,
+        5086,
+        5124,
+        5130,
+        5136,
+        5146,
+        5156,
+        5166,
+        5176,
+        5202,
+        5216,
+        5304,
+        5492,
+        5512,
+        5584,
+        5604,
+        5802,
+        5824,
+        5968,
+        5990,
+        6134,
+        6156,
+        6300,
+        6322,
+        6466,
+        6488,
+        6632,
+        6654,
+        6798,
+        6820,
+        6964,
+        6986,
+        7130,
+        7152,
+        7296,
+        7318,
+        7462,
+        7484,
+        7628,
+        7650,
+        7794,
+        7816,
+        7960,
+        7982,
+        8126,
+        8148,
+        8274,
+        8294,
+        8338,
+        8358,
+        8402,
+        8422,
+        8466,
+        8486,
+        8530,
+        8550,
+        8594,
+        8614,
+        8658,
+        8678,
+        8722,
+        8742,
+        8786,
+        8806,
+        8850,
+        8870,
+        8914,
+        8934,
+        8978,
+        8998,
+        9042,
+        9062,
+        9106,
+        9126,
+        9168,
+        9188,
+        9310,
+        9316,
+        9322,
+        9328,
+        9334,
+        9340,
+        9346,
+        9354,
+        9360,
+        9400,
+        9410,
+        9418,
+        9426,
+        9436,
+        9500,
+        9510,
+        9520,
+        9558,
+        9574,
+        9628,
+        10194,
+        10270,
+        10308,
+        10314,
+        10320,
+        10330,
+        10340,
+        10350,
+        10360,
+        10386,
+        10400,
+        10488,
+        10676,
+        10696,
+        10772,
+        10792,
+        10994,
+        11016,
+        11164,
+        11186,
+        11334,
+        11356,
+        11504,
+        11526,
+        11674,
+        11696,
+        11844,
+        11866,
+        12014,
+        12036,
+        12184,
+        12206,
+        12354,
+        12376,
+        12524,
+        12546,
+        12694,
+        12716,
+        12864,
+        12886,
+        13034,
+        13056,
+        13204,
+        13226,
+        13374,
+        13396,
+        13526,
+        13546,
+        13594,
+        13614,
+        13662,
+        13682,
+        13730,
+        13750,
+        13798,
+        13818,
+        13866,
+        13886,
+        13934,
+        13954,
+        14002,
+        14022,
+        14070,
+        14090,
+        14138,
+        14158,
+        14206,
+        14226,
+        14274,
+        14294,
+        14342,
+        14362,
+        14410,
+        14430,
+        14476,
+        14496,
+        14626,
+        14632,
+        14638,
+        14644,
+        14650,
+        14656,
+        14662,
+        14670,
+        14676,
+        14716,
+        14724,
+        14734,
+        14742,
+        14750,
+        14760,
+        14768,
+        15334,
+        15414,
+        15454,
+        15460,
+        15466,
+        15476,
+        15486,
+        15496,
+        15506,
+        15532,
+        15544,
+        18660,
+        18666,
+        18672,
+        18678,
+        18684,
+        18690,
+        18696,
+        18704,
+        18710,
+        18750,
+        18760,
+        18768,
+        18776,
+        18786,
+        18794,
+        19360,
+        19432,
+        19462,
+        19468,
+        19474,
+        19484,
+        19494,
+        19504,
+        19514,
+        19540,
+        22046,
+        22052,
+        22058,
+        22064,
+        22070,
+        22076,
+        22082,
+        22090,
+        22096,
+        22136,
+        22146,
+        22154,
+        22162,
+        22172,
+        22180,
+        22746,
+        22822,
+        22856,
+        22862,
+        22868,
+        22878,
+        22888,
+        22898,
+        22908,
+        22934,
+        25710,
+        25716,
+        25726,
+        25754,
+        25760,
+        25770
+      ],
+      "9": [
+        350,
+        992,
+        4200,
+        5026,
+        9384,
+        10210,
+        14700,
+        15350,
+        18734,
+        19376,
+        22120,
+        22762
+      ]
     },
-    {
-      "source_hunk": 0,
-      "target_hunk": 2,
-      "offset": 88602
-    },
-    {
-      "source_hunk": 0,
-      "target_hunk": 0,
-      "offset": 19934
-    }
-  ],
+    "cache_bytes": 65536,
+    "optional_fast_only": true,
+    "compiled_draws": true
+  },
+  "scaling_kernel_hunk": 8,
+  "scaling_prefix_hunk": 9,
   "engine_patches": [
     {
       "address": 88302,
@@ -1328,47 +2468,428 @@
       "expected": "4ef900015190",
       "changed_operand_offset": 19934,
       "changed_bytes": 4
+    },
+    {
+      "address": 89946,
+      "size": 198,
+      "expected": "48e73c30207900005c1e227900005c1a247900005c2247f90000628c303900006e0a323c01403a3c0028534074001412660000182091216900040004d4c5d2c1d0c151c8ffea60000078080200076600000410910802000666000008116900010001080200056600000811690002000208020004660000081169000300030802000366000008116900040004080200026600000811690005000508020001660000081169000600060802000066000008116900070007d4c5d2c1d0c151c8ff704cdf0c3c4e75",
+      "changed_bytes": 125
+    },
+    {
+      "address": 86840,
+      "size": 86,
+      "expected": "48e73800227900005c22363c0028383c007f7200123900005c38207900005c2e740014186a000018c404530210181280d2c353016700001a51cafff460e253021298d2c353016700000851cafff460d04cdf001c4e75",
+      "changed_bytes": 48
+    },
+    {
+      "address": 93568,
+      "size": 8,
+      "symbol": "_fread_fast",
+      "jump": true,
+      "expected": "4e55fffa48e70f30",
+      "terminal": true,
+      "continuation": 93576
+    },
+    {
+      "address": 75436,
+      "size": 20,
+      "symbol": "_decode_fast",
+      "jump": false,
+      "expected": "600a204b528b102c671cb110200653864a8066ee",
+      "terminal": false,
+      "continuation": 75456
+    },
+    {
+      "address": 61682,
+      "size": 56,
+      "symbol": "_mirrored_x_offset",
+      "jump": false,
+      "expected": "602c102c6e002200520119416e0072001200700041ec111810301000b06c59ac6408302c6dfc916c6df2526dfffe302dfffeb06dfffc6dca",
+      "terminal": false,
+      "continuation": 61738
+    },
+    {
+      "address": 61760,
+      "size": 52,
+      "symbol": "_mirrored_x_extent",
+      "jump": false,
+      "expected": "6028102c6e002200520119416e0072001200700041ec111810301000b06c59ac6404526c6dda526dfffe302dfffeb06c6de86dce",
+      "terminal": false,
+      "continuation": 61812
+    },
+    {
+      "address": 61842,
+      "size": 56,
+      "symbol": "_x_offset",
+      "jump": false,
+      "expected": "602c102c6e002200520119416e0072001200700041ec111810301000b06c59ac6408302c6dfcd16c6df2526dfffe302dfffeb06dfffc6dca",
+      "terminal": false,
+      "continuation": 61898
+    },
+    {
+      "address": 61920,
+      "size": 52,
+      "symbol": "_x_extent",
+      "jump": false,
+      "expected": "6028102c6e002200520119416e0072001200700041ec111810301000b06c59ac6404536c6dd8526dfffe302dfffeb06c6de86dce",
+      "terminal": false,
+      "continuation": 61972
+    },
+    {
+      "address": 62022,
+      "size": 56,
+      "symbol": "_y_offset",
+      "jump": false,
+      "expected": "602c102c6e012200520119416e0172001200700041ec111810301000b06c59ae6408302c6dfe916c6df4526dfffe302dfffeb06dfffa6dca",
+      "terminal": false,
+      "continuation": 62078
+    },
+    {
+      "address": 62100,
+      "size": 52,
+      "symbol": "_y_extent",
+      "jump": false,
+      "expected": "6028102c6e012200520119416e0172001200700041ec111810301000b06c59ae6404526c6dde526dfffe302dfffeb06c6dea6dce",
+      "terminal": false,
+      "continuation": 62152
+    },
+    {
+      "address": 88046,
+      "size": 10,
+      "symbol": "_scaled_zero",
+      "jump": true,
+      "expected": "48e7fffe2479000059b8",
+      "terminal": true,
+      "continuation": 88056
+    },
+    {
+      "address": 83818,
+      "size": 8,
+      "symbol": "_engine_fill",
+      "jump": true,
+      "expected": "48e70310266f0010",
+      "terminal": true
+    },
+    {
+      "address": 83858,
+      "size": 8,
+      "symbol": "_engine_copy",
+      "jump": true,
+      "expected": "48e70130266f0010",
+      "terminal": true
+    },
+    {
+      "address": 90144,
+      "size": 10,
+      "symbol": "_engine_font2",
+      "jump": true,
+      "expected": "48e73e3c207900005c1e",
+      "terminal": true
+    },
+    {
+      "address": 73170,
+      "size": 8,
+      "symbol": "_engine_find_slot",
+      "jump": true,
+      "expected": "4e55fffc2f077e01",
+      "terminal": true
+    },
+    {
+      "address": 19938,
+      "size": 6,
+      "symbol": "_engine_mask_rle",
+      "jump": true,
+      "expected": "4ef900015338",
+      "terminal": true
     }
   ],
-  "engine_scaled_runs": {
-    "kernel_hunk": 7,
-    "prefix_hunk": 8,
-    "prefix_bytes": 330760,
-    "prefix_memf": "fast",
-    "table_sha256": "4848f9b3128d7bd5f591097002c691fb997da40168f12035ec5f80a9f75696e8",
-    "threshold_source_pixels": 9,
-    "cloned_kernel_entries": {
-      "_scaled_one": 0,
-      "_scaled_two": 458
+  "engine_removed_original_relocations": [
+    {
+      "source_hunk": 0,
+      "target_hunk": 2,
+      "offset": 88308
     },
-    "prefix_sha256": "6b7a71b88237542b8a648635f8bf4c659a75a8e7aaf98daf9353c93276bec8ec",
-    "runtime_validation": false
-  },
-  "engine_accept_rows": {
-    "rows": 257,
-    "row_bytes": 257,
-    "phase255_wrap_slot": true,
-    "signed_scale_clamped_0_256": true,
-    "runtime_validation": false
-  },
-  "engine_run_specialization": {
-    "color_classified_once_per_RLE": true,
-    "opaque_pixel_loop_without_color_check": true,
-    "transparent_pixel_loop_without_opaque_mask_work": true,
-    "relaxed_conditional_branches": true,
-    "runtime_validation": false
+    {
+      "source_hunk": 0,
+      "target_hunk": 2,
+      "offset": 88602
+    },
+    {
+      "source_hunk": 0,
+      "target_hunk": 0,
+      "offset": 19934
+    },
+    {
+      "source_hunk": 0,
+      "target_hunk": 2,
+      "offset": 88052
+    },
+    {
+      "source_hunk": 0,
+      "target_hunk": 2,
+      "offset": 90150
+    }
+  ],
+  "original_relocations_outside_engine_patch_footprints_retained": true,
+  "engine_scaled_runs": {
+    "kernel_hunk": 8,
+    "prefix_hunk": 9,
+    "prefix_bytes": 133896,
+    "table_sha256": "4848f9b3128d7bd5f591097002c691fb997da40168f12035ec5f80a9f75696e8",
+    "compiled_cache": true
   },
   "engine_stripe_relax": {
-    "source_module_sha256": "14718c4497191ab767b208a5f0113f730255a802251b7bec039c6de917a800c8",
+    "source_module_sha256": "a9ad4b8343681dcb26294fb63a7cc9199f75b472ad75d3e10916af191ca931c8",
     "kernel_hunk": 9,
-    "kernel_bytes": 376,
-    "kernel_sha256": "d727ef0d71fc58eb39c2a1b1f250ba5dee546e9412b617cd7f7dd703c2a5c45b",
+    "kernel_bytes": 760,
+    "kernel_sha256": "87e69a1b6418485512b42c7b3d13eac75a410ee9551ff79498a3cace5e7ec284",
     "original_bytes": 424,
-    "shortened_branches": 24,
+    "shortened_branches": 18,
+    "extended_run_batching": true,
+    "batch_minimum_pixels": 8,
+    "appended_batch_bytes": 372,
     "all_nonbranch_bytes_exact": true,
+    "original_prefix_nonbranch_bytes_exact": true,
     "original_body_retained": true,
     "existing_jump_retargeted": true,
     "extra_entry_jump": false,
     "runtime_validation": false
+  },
+  "engine_restore_relax": {
+    "start": 89946,
+    "end": 90144,
+    "original_bytes": 198,
+    "kernel_bytes": 178,
+    "source_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
+    "kernel_sha256": "360b5e9f7289f0f4453f77021b86c7fee0d1dee81cbf85d43c9b20e44be6c540",
+    "absolute_h2_relocations": [
+      6,
+      12,
+      18,
+      24,
+      30
+    ],
+    "branches": [
+      {
+        "old": 89994,
+        "new": 48,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90016,
+        "new": 68,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90024,
+        "new": 74,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90034,
+        "new": 82,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90048,
+        "new": 94,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90062,
+        "new": 106,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90076,
+        "new": 118,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90090,
+        "new": 130,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90104,
+        "new": 142,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 90118,
+        "new": 154,
+        "old_size": 4,
+        "new_size": 2
+      }
+    ],
+    "external_entry_references": [
+      63492
+    ],
+    "no_external_interior_entry": true,
+    "nonbranch_bytes_identical": true,
+    "relocation_positions_unchanged": true
+  },
+  "engine_mask_rle_relax": {
+    "start": 86840,
+    "end": 86926,
+    "original_bytes": 86,
+    "kernel_bytes": 80,
+    "source_sha256": "1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725",
+    "kernel_sha256": "d1be0e6c9ce2c79344c588f619c2e0e9e78ed984331d541ce99e495fb32340ba",
+    "absolute_h2_relocations": [
+      6,
+      22,
+      28
+    ],
+    "branches": [
+      {
+        "old": 86876,
+        "new": 36,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 86892,
+        "new": 50,
+        "old_size": 4,
+        "new_size": 2
+      },
+      {
+        "old": 86910,
+        "new": 66,
+        "old_size": 4,
+        "new_size": 2
+      }
+    ],
+    "external_entry_references": [
+      19938
+    ],
+    "no_external_interior_entry": true,
+    "nonbranch_bytes_identical": true,
+    "relocation_positions_unchanged": true
+  },
+  "engine_buffered_read": {
+    "entries": {
+      "_fread_fast": 0,
+      "_fread_original": 266,
+      "_decode_fast": 378
+    },
+    "original_code_relocations": [
+      338
+    ],
+    "code_bytes": 516,
+    "original_body_sha256": "09f033eab28e5fba59d7574d35f83bdd3db838e4337102f4a881ba22f46ca30b",
+    "original_decode_sha256": "f26295ca358216e154d1ab94ef77c5ae7c00a6c0c51099240cd5d18cd9243d35"
+  },
+  "engine_geometry_counts": {
+    "code_bytes": 908,
+    "prefix_hunk": 9,
+    "threshold_source_pixels": 16
+  },
+  "engine_unmasked_runs": {
+    "code_bytes": 420,
+    "prefix_hunk": 9,
+    "threshold_source_pixels": 9
+  },
+  "engine_memory_fill": {
+    "code_bytes": 100,
+    "threshold_bytes": 16,
+    "unaligned_leading_byte": true
+  },
+  "engine_memory_copy": {
+    "code_bytes": 108,
+    "threshold_bytes": 16,
+    "close_forward_overlap_retains_byte_copy": true
+  },
+  "engine_packed_font": {
+    "code_bytes": 1236,
+    "guard": {
+      "bits_per_pixel": 2,
+      "shift": 6,
+      "mask": 192,
+      "initial_bit_counter": 8
+    },
+    "original_fallback": true,
+    "global_relocation_count": 45,
+    "kernel_sha256": "3de3a5988480bbd846b114804edc17cc2d13457c51eed8e36e7fc9b9e9134643"
+  },
+  "engine_verb_lookup": {
+    "code_bytes": 176,
+    "slot_count": 99,
+    "ordered_primary_secondary_reads": true
+  },
+  "engine_mask_rle_unroll": {
+    "code_bytes": 198,
+    "repeat_threshold": 8,
+    "unroll_bytes": 8,
+    "global_relocations": [
+      6,
+      22,
+      28
+    ],
+    "original_decoder_retained": true,
+    "byte_access_order_preserved": true
+  },
+  "engine_font_cache": {
+    "format": 2,
+    "capacity": 64548,
+    "files": {
+      "native-font-2.dat": "4b7746140791df2ea1ffd68f7773d5939fe5b0fb30c1625f509c4f5333558a5a",
+      "native-font-4.dat": "bcf080edbdd72947f75f935ae23899cc838206a31bab02d30e0b6638366f5a78"
+    },
+    "prototype": true
+  },
+  "engine_blitter_strides": {
+    "body_sha256": "4ba13c320f0bb221e7c6755d2968805586f46cc7831825516d40a8afb5bcf699",
+    "word_strides": [
+      2,
+      8000
+    ],
+    "sites": {
+      "0x15c52": {
+        "expected": "dbc5",
+        "replacement": "dac5"
+      },
+      "0x15c54": {
+        "expected": "ddc5",
+        "replacement": "dcc5"
+      },
+      "0x15c56": {
+        "expected": "d3c5",
+        "replacement": "d2c5"
+      },
+      "0x15c58": {
+        "expected": "d5c5",
+        "replacement": "d4c5"
+      },
+      "0x15c6a": {
+        "expected": "d7c6",
+        "replacement": "d6c6"
+      },
+      "0x15c6c": {
+        "expected": "d9c6",
+        "replacement": "d8c6"
+      }
+    },
+    "caller_registers_preserved": true
+  },
+  "tfmx_pcm_init_fix": {
+    "address": 5384,
+    "size": 2,
+    "expected": "4290",
+    "replacement": "4294",
+    "preceding": "2841",
+    "following": "2840",
+    "purpose": "Clear first PCM status LONG at D1 via already initialized A4; preserve stale A0",
+    "runtime_validated": false
   }
 }

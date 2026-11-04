@@ -20,6 +20,11 @@ bases=[0x100000,0x20000,0x200000,0x300000,0x340000,0x380000,0x3c0000]
 cpu=unicorn.Uc(unicorn.UC_ARCH_M68K,unicorn.UC_MODE_BIG_ENDIAN)
 cpu.ctl_set_cpu_model(r.UC_CPU_M68K_M68000)
 reader=HunkReader();assert reader.read_file(str(BUILD / 'Monkey_Talkie_Test'))==0 and reader.build_segments()
+# Preserve legacy fixture addresses and allow independently linked DATA/BSS.
+sections=[h for h in reader.hunks if h['type_name'] in ('HUNK_CODE','HUNK_DATA','HUNK_BSS')]
+bases += [0x400000+0x40000*i for i in range(max(0,len(sections)-len(bases)))]
+for h in sections[7:]:
+    assert bases[h['hunk_no']]+((h['alloc_size']+4095)&~4095)<=0x500000, 'Extra hunk overlaps fixture stack region'
 for h in reader.hunks:
     if h['type_name'] in ('HUNK_CODE','HUNK_DATA','HUNK_BSS'):
         cpu.mem_map(bases[h['hunk_no']],(h['alloc_size']+4095)&~4095)

@@ -21,8 +21,26 @@ static struct MsgPort *server;
 #ifdef NATIVE_GAME_LOADER
 #include "native_driver.h"
 #include "module_exports.h"
-extern long call_game(__reg("a1") void *entry);
+extern long call_game(__reg("a1") void *entry, __reg("a0") const char *args, __reg("d0") long length);
 static NvU32 loader_flags;
+static char game_args[8] = "\n";
+static long game_args_length = 1;
+
+static int boot_parameter(const char *text) {
+ unsigned long value = 0;
+ unsigned n = 0;
+ if (!*text) return 0;
+ while (text[n]) {
+  if (text[n] < '0' || text[n] > '9' || n >= 5) return 0;
+  value = value * 10 + (unsigned)(text[n] - '0');
+  if (value > 32767) return 0;
+  ++n;
+ }
+ memcpy(game_args, text, n);
+ game_args[n] = '\n'; game_args[n+1] = 0;
+ game_args_length = n+1;
+ return 1;
+}
 
 static NvU8 *segment_address(BPTR segment, unsigned index) {
 	while (segment && index--)
@@ -82,10 +100,21 @@ static int run_game(void) {
 #if NV_CONTROL_VERSION >= 2
 	control->policy = packet.policy;
 #endif
+#ifdef NV_PRESENCE_HUNK
+	{
+		NvU8 *presence = segment_address(segments, NV_PRESENCE_HUNK);
+		FILE *mode = fopen("PreparedOnly", "rb");
+		unsigned char marker[5];
+		int enabled = mode && fread(marker, 1, 5, mode) == 5 &&
+			!memcmp(marker, "NPC1\n", 5) && fgetc(mode) == EOF;
+		if (mode) fclose(mode);
+		if (presence) *(NvU16 *)(presence + NV_PRESENCE_OFFSET) = enabled;
+	}
+#endif
 	control->flags = NV_CONTROL_ENABLE | loader_flags;
 	puts("Starting native Monkey Island");
 	fflush(stdout);
-	result = call_game(code);
+	result = call_game(code, game_args, game_args_length);
 	((void (*)(void))(end + NV_END_OFFSET))();
 	((void (*)(void))(shutdown + NV_SHUTDOWN_OFFSET))();
 	control->flags = 0;
@@ -216,8 +245,11 @@ int main(int argc, char **argv) {
 	for (option = 1; option < argc; ++option) {
 		if (!strcmp(argv[option], "--skip-pirate-check"))
 			loader_flags |= NV_CONTROL_SKIP_PIRATE_CHECK;
+		else if (!strncmp(argv[option], "--boot-param=", 13) &&
+		         !(loader_flags & NV_CONTROL_DEBUG_BOOT) && boot_parameter(argv[option]+13))
+			loader_flags |= NV_CONTROL_DEBUG_BOOT;
 		else {
-			puts("Usage: MonkeyTalkie [--skip-pirate-check]");
+			puts("Usage: MonkeyTalkie [--skip-pirate-check] [--boot-param=0..32767]");
 			return 20;
 		}
 	}

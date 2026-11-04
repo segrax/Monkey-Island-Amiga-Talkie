@@ -1,23 +1,95 @@
 # Rebuilding the native code
 
-End users only need the ready-to-run C++ builder in the repository root. This directory supplies the corresponding source for the native hybrid driver, loader and voice worker, including optional older backends used by the build scripts. No game or emulator fixtures are supplied.
+The desktop builder embeds the engine delta, MonkeyTalkie loader and VoiceServer
+worker. This directory contains their source. See [../BUILDING.md](../BUILDING.md)
+for the Windows/Linux tools and [../VALIDATION.md](../VALIDATION.md) for checks.
 
-For source development on Windows:
+## Toolchain
 
-1. Install Python 3.11+ and the VBCC m68k-amigaos compiler, VASM, VLINK and Amiga NDK headers/libraries. The current configuration expects `D:/Tools/amiga-dev`; adjust tool paths in `audio/kick13.cfg`, `audio/build_loader.py`, `audio/worker/build_worker.py` and the engine component scripts if necessary. These tools are external dependencies and are not bundled.
-2. Work from this `source/native` directory. Install analysis dependencies using `python -m pip install --target tools/python -r requirements-dev.txt` (development only).
-3. Place the hash-matched original Amiga `Monkey_Island` executable at `data/original/Monkey_Island`. It is the executable inside original disk 1, not the ScummVM data files and not a previously patched executable.
-4. Run `python engine/build.py --candidate --hybrid-mix --skip-fixture-tests --output build/hybrid`. A new output directory is required. This compiles the core, applies the scaling/stripe changes, creates the module manifest and builds the matched loader. The flag omits an execution test requiring an owned game RAM snapshot that is deliberately not distributed; patch construction and relocation checks still run.
-5. `build/hybrid/module/Monkey_Talkie_Test` is the new engine, `module.json` its matching manifest, and `loader-build/MonkeyTalkie` its matching loader. Keep all three together.
+Use Python 3.11+, VBCC m68k-amigaos, VASM, VLINK and the Amiga NDK.
+Build scripts expect the toolchain at D:/Tools/amiga-dev; the compiler
+configuration is audio/kick13.cfg.
 
-The default source headers in `audio/worker` bind the expanded archive/map profile. Build that worker with `python audio/worker/build_worker.py`. To build the standard Ultimate Talkie profile, first copy the three headers from `standard-bindings` over their equivalents in `audio/worker`, then run the same command. This changes data bindings only. The output is `audio/worker/VoiceServer_PreparedOnly` (installed as `VoiceServer`).
+From source/native, install the test dependencies:
 
-`engine/core/native_clock.c` uses `timer.device/ReadEClock` on V36+ and an OS-allocated CIA timer on Kickstart 1.3. The latter tries both timers on both resources without replacing an existing owner; if none is available, audio-driver startup fails. Its overflow handler extends the counter, and sampling accounts for pending underflows without clearing another timer's interrupt. `engine/core/test_clock_lifecycle.py` exercises both backends against compiled 68000 code; set `MONKEY_ENGINE_BUILD` to the candidate build directory before running it. See [../VALIDATION.md](../VALIDATION.md) for emulator coverage.
+```sh
+python -m pip install --target tools/python -r requirements-dev.txt
+```
 
-`engine/core/test_hybrid_equivalence.py --baseline build/<previous-candidate>` compares the current `MONKEY_ENGINE_BUILD` against a previous compiled hybrid core. It checks both output buffers, speech consumption, live music state and register writes across 128 deterministic cases, and measures the silent IRQ instruction count with mocked OS/clock calls. Both builds must be available beneath this directory's `build/` tree; baseline binaries are not distributed.
+Place the original Amiga executable at data/original/Monkey_Island.
+Its SHA-256 must be
+`1ac24b2fa0e4f9e454a5523bb57e48496805e8c4fa3dfa07efb6855a1bfa7725`.
 
-`audio/build_pcm.py` is the original developer implementation of VOC-to-prepared-PCM conversion and independent sample verification. The C++ builder in the repository's `source/builder` implements the same conversion, reconstructs the map and applies the engine delta without requiring Python or compiler tools at runtime. `source/assets/patches/map-recipe.json` contains source-stream offsets and numeric mapping metadata, not dialogue text; `source/assets/supported-inputs.json` pins the inputs and generated files. Full and standard prepared data remain separate profiles.
+## Build the current engine and loader
 
-The software is GPL-3.0-or-later; see `../../LICENSE`. MD5 code is adapted from ScummVM's implementation by Christophe Devine, with original notices preserved in `native_md5.c`; see `SCUMMVM-COPYRIGHT`. VBCC/VASM/VLINK/NDK and their standard libraries are external toolchain dependencies governed by their own terms. Generated original-game content is not covered by our software licence and is not supplied here.
+From source/native:
 
-AI assistance was used for this unofficial local modification. The hybrid source is compiled for 68000 instructions but that does not establish stock A500 performance. Positive user feedback is separate from the bounded emulator tests; those tests alone are not physical hardware certification.
+```sh
+python engine/build.py --candidate --hybrid-mix --planar-cache --planar-chip-fallback --glyph-cache --skip-fixture-tests --output build/talkie
+```
+
+Choose a new output directory beneath build for each build. The command
+compiles the components, applies the engine patches, runs their checks and
+builds the matched loader. The skip-fixture-tests flag omits the one execution
+test that needs the external combined-ram.bin snapshot.
+
+Keep these outputs together:
+
+| Output | Installed name |
+| --- | --- |
+| build/talkie/module/Monkey_Talkie_Test | Monkey_Talkie |
+| build/talkie/module/loader-build/MonkeyTalkie | MonkeyTalkie |
+| build/talkie/module/module.json | module.json |
+
+The desktop builder generates native-planar.dat, native-font-2.dat,
+native-font-4.dat and native-voice.pcm from the selected game inputs.
+Native compilation alone does not produce these assets. Graphics must match
+the module manifest. Missing or unsuitable graphics use the original drawing
+paths. See [engine/art/FORMAT.md](engine/art/FORMAT.md) and
+[engine/scaling/CACHE.md](engine/scaling/CACHE.md) for their formats and
+allocation rules.
+
+## Audio and tests
+
+The hybrid driver plays all four music/SFX parts directly through Paula between
+speech lines. During speech, channels 0/1 mix music with centered voice while
+channels 2/3 remain native. Handover waits for the previous DMA state to drain,
+unmutes on the initial fetch and restores unconsumed speech if preparation
+exceeds its budget. Gain stays fixed, without ducking.
+
+Hybrid builds define NV_QUIET_NATIVE for the driver and register adapters and
+link engine/core/native_hw_read.s. The driver uses -O=65535 -schedule -speed;
+all native code targets the 68000.
+
+The engine build runs audio, rendering, relocation, cache and ABI checks.
+The test_quiet_restart.py and test_quiet_prime.py suites cover handover and
+pending interrupts. Mixer tests enter MIX through the actual READY/service
+path. Individual tests use MONKEY_ENGINE_BUILD to select their build directory.
+
+Render statistics are disabled in release builds. Set MONKEY_RENDER_STATS=1
+for diagnostic builds; the manifest records whether those counters are active.
+Speech underrun and scheduling checks remain active in release builds.
+
+For a populated Scumm Bar development start, run on the Amiga:
+
+```text
+MonkeyTalkie --boot-param=28
+```
+
+## Voice worker
+
+From source/native:
+
+```sh
+python audio/worker/build_worker.py
+```
+
+The output is audio/worker/VoiceServer_PreparedOnly, installed as VoiceServer.
+The worker supports prepared NPC1 audio and monster.sou fallback. The
+PreparedOnly marker requires matched prepared PCM and disables that fallback.
+The direct and continuous-stereo engine backends remain available in the source.
+
+Default worker headers bind the expanded archive/map profile. For standard
+Ultimate Talkie, first copy the three headers from standard-bindings over their
+counterparts in audio/worker, then build. Headers must match the archive and
+map; the desktop builder selects the matching embedded worker automatically.

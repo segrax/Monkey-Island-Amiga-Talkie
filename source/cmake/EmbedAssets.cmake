@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 file(GLOB_RECURSE payloads CONFIGURE_DEPENDS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${CMAKE_CURRENT_SOURCE_DIR}/assets/*")
 set(embed "#include \"builder.hpp\"\nnamespace talkie {\n")
 set(index "")

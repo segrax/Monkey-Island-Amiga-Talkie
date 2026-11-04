@@ -1,4 +1,4 @@
-"""Append the branch-only stripe clone to an explicitly pinned private HUNK image."""
+"""Append the validated stripe clone to an explicitly pinned private HUNK image."""
 from pathlib import Path as _EnginePath
 import sys as _engine_sys
 _engine_sys.pycache_prefix = str(_EnginePath(__file__).resolve().parents[2] / "build/python-cache")
@@ -33,7 +33,7 @@ def build(source,output,expected):
   for target,offs in sorted(groups.items()):
    if offs:result+=W(len(offs),target,*sorted(offs))
   return result+W(0)
- kernel=(BUILD / 'stripe.bin').read_bytes();kernel+=bytes((-len(kernel))%4)
+ kernel=(BUILD / 'stripe.bin').read_bytes();assert hashlib.sha256(kernel).hexdigest()==generation['kernel_sha256'];kernel+=bytes((-len(kernel))%4)
  newhead=bytearray(raw[:20+4*n]);struct.pack_into('>I',newhead,8,n+1);struct.pack_into('>I',newhead,16,n);newhead+=W(len(kernel)//4)
  result=newhead+W(1001,len(code)//4)+code+reloc(relocs)+W(1010)+raw[firstend+4:]+W(1001,len(kernel)//4)+kernel+reloc({2:generation['absolute_h2_relocations']})+W(1010)
  output.write_bytes(result)

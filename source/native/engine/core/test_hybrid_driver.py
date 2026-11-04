@@ -7,11 +7,14 @@ prefix=(HERE/'test_driver.py').read_text().split("call('_nv_driver_start')",1)[0
 exec(compile(prefix,str(HERE/'test_driver.py'),'exec'))
 assert meta['audio_backend']=='hybrid_stereo_mix'
 ticks=100;stops=0;nesting=-1
+transport_epoch=100;transport_irq_index=0
 for off in (-120,-126):cpu.mem_write(0x700800+off,bytes.fromhex('4e75'))
 mocked={sym('_nv_clock_start'):'start',sym('_nv_clock_now'):'now',sym('_nv_clock_stop'):'stop'}
+if '_nv_clock_now_locked' in meta['exports']:mocked[sym('_nv_clock_now_locked')]='now'
+clock_now_addresses={address for address,kind in mocked.items() if kind=='now'}
 for a in mocked:cpu.mem_write(a,bytes.fromhex('4e75'))
 def clock(uc,pc,size,unused):
- global stops,nesting
+ global stops,nesting,ticks,transport_epoch,transport_irq_index
  if pc==0x700800-120:
   nesting+=1;hardware[0xdff09a]&=~0x4000;put(0xdff01c,hardware[0xdff09a],2)
  elif pc==0x700800-126:
@@ -19,7 +22,9 @@ def clock(uc,pc,size,unused):
   if nesting<0:hardware[0xdff09a]|=0x4000
   put(0xdff01c,hardware[0xdff09a],2)
  elif pc in mocked:
+  if mocked[pc]=='now' and '_nv_music_owner' in meta['exports'] and get(sym('_nv_music_owner'),2)==2:ticks=(ticks+5)&0xffffffff
   if mocked[pc]=='stop':stops+=1
+  if mocked[pc]=='start':transport_epoch=ticks;transport_irq_index=0
   uc.reg_write(r.UC_M68K_REG_D0,ticks if mocked[pc]=='now' else 1)
 cpu.hook_add(unicorn.UC_HOOK_CODE,clock)
 def no_audio_read(uc,access,address,size,value,unused):
@@ -35,6 +40,35 @@ def ptr(side,b):return get(driver+layout['right' if side else 'buffers']+4*b,4)
 def out(side,b):return bytes(cpu.mem_read(ptr(side,b),256))
 def write(c,off,value,size=2):
  put(bank+16*c+off,value,size);call('_nv_driver_write',bank+16*c,off)
+def dma_irq(latency=0):
+ global ticks,transport_irq_index
+ # First request primes the paired DMA; subsequent requests occur as the
+ # previous bank's last word starts. Clock is integer EClock (5Paula clocks).
+ if transport_irq_index:
+  ticks=(transport_epoch+((transport_irq_index*256-2)*get(voice+30,2))//5+latency)&0xffffffff
+ else:ticks=(transport_epoch+latency)&0xffffffff
+ irq();transport_irq_index+=1
+# Renderer tests exercise the real READY/service entry rather than assuming
+# native startup immediately owns the software transport. Routing tests opt out.
+raw_call=call
+native_start=globals().get('NATIVE_START',False)
+def enter_mixed():
+ global ticks,transport_epoch,transport_irq_index
+ if '_nv_music_owner' not in meta['exports']:return
+ assert get(sym('_nv_music_owner'),2)==1
+ saved=bytes(cpu.mem_read(voice,44))
+ ticks=(ticks+71001)&0xffffffff
+ transport_epoch=ticks;transport_irq_index=0
+ for off,value in ((8,65535),(10,0),(12,0),(14,0),(16,1),(6,3)):
+  put(voice+off,value,2)
+ raw_call('_nv_driver_service')
+ assert get(sym('_nv_music_owner'),2)==0
+ assert get(voice+12,2)==0 and get(voice+18,2)==65535
+ cpu.mem_write(voice,saved)
+def call(name,*args):
+ raw_call(name,*args)
+ if name=='_nv_driver_start' and not native_start:enter_mixed()
+
 # Simulate loud output latches inherited from a previous player/game.
 for c in range(4):put(0xdff0a8+16*c,64,2)
 call('_nv_driver_start')
@@ -61,35 +95,35 @@ cpu.reg_write(r.UC_M68K_REG_A4,bank+48);cpu.reg_write(r.UC_M68K_REG_D0,0x605600)
 cpu.reg_write(r.UC_M68K_REG_A5,bases[0]+0x17e2);cpu.reg_write(r.UC_M68K_REG_A7,0x50f000)
 cpu.emu_start(bases[0]+0xb6a,bases[0]+0xb70,count=20000)
 assert get(0xdff0d0,4)==0x605600
-irq() # Prime the paired DMA transport before requesting speech.
+dma_irq() # Prime the paired DMA transport before requesting speech.
 put(voice+8,7,2);put(voice+10,0,2);put(voice+12,0,2);put(voice+14,511,2)
 put(voice+16,1,2);put(voice+6,3,2);put(voice+26,64,2);cpu.mem_write(pcm,bytes([244])*511)
-free=field('active');ticks+=100;irq()
+free=field('active');ticks+=100;dma_irq()
 assert out(0,free)==bytes([9])*256 and out(1,free)==bytes([24])*256
 assert get(voice+12,2)==256
-free=field('active');ticks+=100;irq()
+free=field('active');ticks+=100;dma_irq()
 assert out(0,free)==bytes([9])*255+bytes([15])
 assert out(1,free)==bytes([24])*255+bytes([30])
 assert get(voice+6,2)==5 and get(voice+20,2)!=7
-ticks+=100;irq();assert get(voice+20,2)!=7
-ticks+=100;irq();assert get(voice+20,2)==7
+ticks+=100;dma_irq();assert get(voice+20,2)!=7
+ticks+=100;dma_irq();assert get(voice+20,2)==7
 # Song master clear stops both direct channels but keeps speech outputs alive.
 call('_nv_driver_control',0,0x200)
 assert hardware[0xdff096]&0x20f==0x203
 put(voice+8,8,2);put(voice+12,0,2);put(voice+14,256,2);put(voice+16,1,2);put(voice+6,3,2)
-cpu.mem_write(pcm,bytes([20])*256);free=field('active');ticks+=100;irq()
+cpu.mem_write(pcm,bytes([20])*256);free=field('active');ticks+=100;dma_irq()
 assert out(0,free)==out(1,free)==bytes([10])*256
 # Full-scale sums remain signed, bounded and identical across speakers.
 for gen,value in ((9,127),(10,128)):
  for c in range(2):cpu.mem_write(0x605000+512*c,bytes([value])*512)
  call('_nv_driver_control',0,0x820f)
  put(voice+8,gen,2);put(voice+12,0,2);put(voice+14,256,2);put(voice+6,3,2)
- cpu.mem_write(pcm,bytes([value])*256);free=field('active');ticks+=100;irq()
+ cpu.mem_write(pcm,bytes([value])*256);free=field('active');ticks+=100;dma_irq()
  assert out(0,free)==out(1,free)==bytes([value])*256
 # Cancellation and direct-channel clear do not disturb the other voices.
 call('_nv_driver_clear_native_volume',3);assert get(0xdff0d8,2)==0
 put(voice+8,11,2);put(voice+10,11,2);put(voice+12,0,2);put(voice+14,100,2);put(voice+6,3,2)
-ticks+=100;irq();assert get(voice+6,2)==8 and get(voice+12,2)==100
+ticks+=100;dma_irq();assert get(voice+6,2)==8 and get(voice+12,2)==100
 # Nonconstant samples verify resampling phase and loop reloads, not just levels.
 call('_nv_driver_control',0,0x200)
 patterns=[]
@@ -97,24 +131,30 @@ for c,period in enumerate((322,161)):
  data=bytes((i*(3+5*c)+17*c)&255 for i in range(512));patterns.append(data)
  cpu.mem_write(0x605000+512*c,data);write(c,6,period)
 call('_nv_driver_control',0,0x8203)
-free=field('active');irq()
+music_started=ticks
+expected_start=transport_epoch*5+(transport_irq_index+1)*256*161-music_started*5
+free=field('active');dma_irq()
 for c in range(2):
  expected=[]
  for i in range(256):
-  index=((256+i)//(2 if c==0 else 1))%512
+  index=((expected_start+i*161)//(322 if c==0 else 161))%512
   value=patterns[c][index];value=value if value<128 else value-256
   expected.append((value>>1)&255)
  assert out(c,free)==bytes(expected),'Incorrect variable-pitch phase or loop'
 # The deadline counter measures render duration, independently of speech underruns.
 now_calls=[0]
 def delayed_clock(uc,pc,size,unused):
- if pc==sym('_nv_clock_now'):
+ if pc in clock_now_addresses:
   now_calls[0]+=1
   if now_calls[0]==3:uc.reg_write(r.UC_M68K_REG_D0,ticks+9000)
 prior_late=field('late_buffers',4)
 hook=cpu.hook_add(unicorn.UC_HOOK_CODE,delayed_clock)
-irq();cpu.hook_del(hook)
-assert field('late_buffers',4)==prior_late+1 and field('max_render_ticks',4)>=9000
+dma_irq();cpu.hook_del(hook)
+if meta.get('render_statistics',True):
+ assert now_calls[0]==3 and field('late_buffers',4)==prior_late+1 and field('max_render_ticks',4)>=9000
+else:
+ assert now_calls[0]==1,'Release IRQ must read the scheduling clock only once'
+ assert field('late_buffers',4)==prior_late and field('max_render_ticks',4)==0
 call('_nv_driver_end')
 assert all(get(0xdff0a8+16*c,2)==0 for c in range(4)), 'Shutdown left a Paula channel audible'
 assert len(freed)==4 and stops==1 and nesting==-1
@@ -126,5 +166,5 @@ report=dict(compiled_hybrid_pass=True,two_direct_hardware_music_channels=True,
  master_clear_keeps_speech=True,signed_full_scale_no_wrap=True,cancellation=True,
  no_write_only_audio_register_reads=True,bounded_chip_writes=True,cleanup=True,
  all_four_startup_and_shutdown_volumes_muted=True,
- variable_pitch_waveform_and_loop_phase=True,render_deadline_counter_exercised=True,hardware_runtime=False,module_sha256=meta['sha256'])
+ variable_pitch_waveform_and_loop_phase=True,render_statistics=meta.get('render_statistics',True),render_clock_reads=now_calls[0],hardware_runtime=False,module_sha256=meta['sha256'])
 (BUILD/'hybrid-validation.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

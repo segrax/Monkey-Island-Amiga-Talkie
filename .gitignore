@@ -15,3 +15,15 @@ __pycache__/
 
 # The ready-to-run native Windows builder is intentionally included.
 !Build Amiga Talkie.exe
+
+# Native compiler outputs, local dependencies and owned build inputs.
+/source/native/build/
+/source/native/tools/
+/source/native/data/
+*.o
+*.hunk
+*.map
+/source/native/audio/worker/VoiceServer_PreparedOnly
+/source/native/audio/worker/*-validation.json
+/source/native/audio/worker/*-build.json
+/source/native/audio/worker/build-manifest.json

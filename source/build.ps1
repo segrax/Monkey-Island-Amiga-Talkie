@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 $ErrorActionPreference = 'Stop'
 $cmake = (Get-Command cmake -ErrorAction SilentlyContinue).Source
 if (-not $cmake) {

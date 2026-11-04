@@ -1,4 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
 """Compiled strict-digest gating, exact binding, and unchanged generic fallback."""
 from pathlib import Path
 HERE = Path(__file__).resolve().parent

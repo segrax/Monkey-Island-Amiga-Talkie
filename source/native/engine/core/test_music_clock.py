@@ -23,6 +23,7 @@ def system_calls(uc,pc,size,data):
  elif pc==E-450:state['closes']+=1
  elif pc==E-636:state['flushes']+=1
  elif pc==T-60:
+  put(0xdff01c,0x4000,2)
   at=uc.reg_read(r.UC_M68K_REG_A0)
   put(at,0,4);put(at+4,state['ticks'],4)
   uc.reg_write(r.UC_M68K_REG_D0,709379)
@@ -43,9 +44,16 @@ for deny_b in (False,True):
   assert bytes(cpu.mem_read(code+offset,size))==bytes.fromhex('4e71')*(size//2)
  assert get(code+0x161e,4)==low+(0xa00 if deny_b else 0x900)
  assert get(0x78,4)==vector
- assert call('_nv_clock_now')==state['ticks']
+ assert clock_read()==state['ticks']
  state['ticks']+=9876
- assert call('_nv_clock_now')==state['ticks']
+ assert clock_read()==state['ticks']
+ # ReadEClock may transiently enable the master; both entries must restore it.
+ for sr in (0,0x2700):
+  for master in (False,True):
+   cpu.reg_write(r.UC_M68K_REG_SR,sr);put(0xdff01c,0x4000 if master else 0,2)
+   assert clock_read()==state['ticks']
+   assert bool(get(0xdff01c,2)&0x4000)==master
+   assert cpu.reg_read(r.UC_M68K_REG_SR)&0x2700==sr
  acquired=cia['acquired'];interrupt=acquired[1]
  handler=get(interrupt+18,4)
  def callback():

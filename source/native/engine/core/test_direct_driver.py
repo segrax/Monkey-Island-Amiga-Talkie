@@ -24,6 +24,8 @@ def others_unchanged():
 for offset in (-120, -126):
     cpu.mem_write(0x700800 + offset, bytes.fromhex('4e75'))
 mocked = {sym('_nv_clock_start'): 'start', sym('_nv_clock_now'): 'now', sym('_nv_clock_stop'): 'stop'}
+if '_nv_clock_now_locked' in meta['exports']:mocked[sym('_nv_clock_now_locked')]='now'
+clock_now_addresses={address for address,kind in mocked.items() if kind=='now'}
 for address in mocked: cpu.mem_write(address, bytes.fromhex('4e75'))
 def clock_hook(uc, pc, size, data):
     global nesting, clock_stops

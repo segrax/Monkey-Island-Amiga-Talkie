@@ -14,7 +14,7 @@ class CoreClock:
  def ea(self,op,long=False):
   am=op.address_mode
   if am in (1,2):return 0
-  base={3:4,4:4,5:6,6:8,7:10,11:8,12:10,16:8,17:12,18:4}[am]
+  base={3:4,4:4,5:6,6:8,7:10,8:10,11:8,12:10,16:8,17:12,18:4}[am]
   return base+(4 if long else 0)
  def cost(self,ins,nextpc,d3after,before):
   name=ins.mnemonic;ops=ins.operands
@@ -23,27 +23,37 @@ class CoreClock:
    return 10 if nextpc!=ins.address+ins.size else 14
   if name.startswith('bra'):return 10
   if name.startswith('b')and name not in ('btst.l',):return 10 if nextpc!=ins.address+ins.size else (8 if ins.size==2 else 12)
+  if name=='neg.w':return 4
   if name=='rts':return 16
   if name=='jmp':return 12
   if name=='movem.l':return 128 if '-(a7)'in ins.op_str else 132
   if name=='moveq':return 4
   if name in ('swap','not.w'):return 4
+  if name=='exg':return 6
+  if name.startswith('cmpa.'):return 6+self.ea(ops[0],name.endswith('.l'))
+  if name in ('subi.l','addi.l'):return 16
   if name.startswith(('lsl.','lsr.','asl.','asr.')):return (8 if name.endswith('.l') else 6)+2*ops[0].imm
-  if name=='lea.l':return {17:12,6:8,7:12}[ops[0].address_mode]
-  if name.startswith(('move.','movea.')):return 4+self.ea(ops[0],name.endswith('.l'))+self.ea(ops[1],name.endswith('.l'))
+  if name=='lea.l':return {17:12,6:8,7:12,8:12,11:8}[ops[0].address_mode]
+  if name.startswith(('move.','movea.')):
+   return 4+self.ea(ops[0],name.endswith('.l'))+self.ea(ops[1],name.endswith('.l'))
   if name.startswith('adda.'):return 8+self.ea(ops[0],name.endswith('.l'))
   if name.startswith(('addq.','subq.')):return 4
   if name in ('subi.w','andi.w','cmpi.w'):return 8
-  if name.startswith(('tst.','cmp.','add.','sub.')):return 4+self.ea(ops[0])
+  if name=='cmpi.l':return 14+self.ea(ops[1],True)
+  if name.startswith('tst.'):return 4+self.ea(ops[0],name.endswith('.l'))
+  if name.startswith(('cmp.','add.','sub.')):return 4+self.ea(ops[0])
   if name=='btst.l':return 4+self.ea(ops[1])
   if name=='mulu.w':return 38+2*int(ops[0].imm).bit_count()+self.ea(ops[0])
   raise AssertionError((name,ins.op_str))
  def trace(self,uc,pc,size,unused):
   if self.previous:
-   ins,before=self.previous;self.total+=self.cost(ins,pc,uc.reg_read(self.regs.UC_M68K_REG_D3),before)
-  if pc not in self.cache:self.cache[pc]=next(self.cs.disasm(bytes(uc.mem_read(pc,size)),pc,count=1))
-  self.previous=(self.cache[pc],uc.reg_read(self.regs.UC_M68K_REG_D3));self.instructions+=1
+   ins,before=self.previous;self.total+=self.cost(ins,pc,self.counter(self.previous[0]),before)
+  if pc not in self.cache:self.cache[pc]=next(self.cs.disasm(bytes(uc.mem_read(pc,22)),pc,count=1))
+  self.previous=(self.cache[pc],self.counter(self.cache[pc]));self.instructions+=1
+ def counter(self,ins):
+  if not ins.mnemonic.startswith('db'):return 0
+  return self.cpu.reg_read(getattr(self.regs,'UC_M68K_REG_'+self.cs.reg_name(ins.operands[0].reg).upper()))
  def finish(self,pc):
   if self.previous:
-   ins,before=self.previous;self.total+=self.cost(ins,pc,self.cpu.reg_read(self.regs.UC_M68K_REG_D3),before);self.previous=None
+   ins,before=self.previous;self.total+=self.cost(ins,pc,self.counter(self.previous[0]),before);self.previous=None
   return self.total

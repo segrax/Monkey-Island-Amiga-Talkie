@@ -15,6 +15,7 @@ m=json.loads((source/'module.json').read_text());patch=json.loads((target/'Monke
 m['sha256']=patch['sha256'];m['exports']['_stripe_decoder']={'hunk':9,'offset':0}
 m['engine_patches'].append(patch['hook'])
 m['engine_removed_original_relocations'].append({'source_hunk':0,'target_hunk':0,'offset':0x4dde})
-m['engine_stripe_relax']=dict(source_module_sha256=patch['source_sha256'],kernel_hunk=9,kernel_bytes=376,kernel_sha256=patch['kernel_sha256'],original_bytes=424,shortened_branches=24,all_nonbranch_bytes_exact=True,original_body_retained=True,existing_jump_retargeted=True,extra_entry_jump=False,runtime_validation=False)
+generation=json.loads((BUILD/'generation.json').read_text())
+m['engine_stripe_relax']=dict(source_module_sha256=patch['source_sha256'],kernel_hunk=9,kernel_bytes=generation['kernel_bytes'],kernel_sha256=patch['kernel_sha256'],original_bytes=424,shortened_branches=sum(b['new_size']<b['old_size'] for b in generation['branches']),extended_run_batching=generation['extended_run_batching'],batch_minimum_pixels=generation['batch_minimum_pixels'],appended_batch_bytes=generation['appended_batch_bytes'],all_nonbranch_bytes_exact=True,original_prefix_nonbranch_bytes_exact=True,original_body_retained=True,existing_jump_retargeted=True,extra_entry_jump=False,runtime_validation=False)
 (target/'module.json').write_text(json.dumps(m,indent=2)+'\n')
 print(m['sha256'])

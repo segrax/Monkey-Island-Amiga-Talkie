@@ -1,5 +1,6 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
 #include "builder.hpp"
+#include "planar.hpp"
+#include "glyphs.hpp"
 #include <algorithm>
 #include <chrono>
 #include <random>
@@ -61,6 +62,10 @@ std::string build(const Options &o, const std::function<void(const std::string &
         patch_engine(original_engine(o.engine, pins["original_engine"].get<std::string>()));
     if (sha(engine) != pins["hybrid_engine"].get<std::string>())
         throw std::runtime_error("Patched engine checksum failed.");
+    auto presence = payload("patches/speech-presence.bin");
+    if (presence.size() != 8192 ||
+        std::search(engine.begin(), engine.end(), presence.begin(), presence.end()) == engine.end())
+        throw std::runtime_error("Engine and speech presence index differ.");
     auto archive = read_file(o.sou);
     auto archive_hash = sha(archive);
     Json profile;
@@ -92,6 +97,30 @@ std::string build(const Options &o, const std::function<void(const std::string &
     write_file(staging / "amiga-talkie.dat", map.bytes);
     for (const std::string name : {"MonkeyTalkie", "module.json"})
         write_file(staging / name, payload("runtime/" + name));
+    auto runtime = payload_json("runtime/module.json");
+    if (runtime.contains("engine_planar_cache")) {
+        const auto &art = runtime["engine_planar_cache"];
+        if (art["data_file"] != "native-planar.dat" || art["capacity"] != 32768)
+            throw std::runtime_error("Unsupported prepared image format.");
+        auto images = prepare_planar(rooms);
+        if (sha(images) != art["data_sha256"].get<std::string>())
+            throw std::runtime_error("Prepared image checksum failed.");
+        write_file(staging / "native-planar.dat", images);
+    }
+    if (runtime.contains("engine_font_cache")) {
+        const auto &font = runtime["engine_font_cache"];
+        if (font["format"] != 2 || font["capacity"] != 64548 || !font["files"].is_object())
+            throw std::runtime_error("Unsupported prepared font format.");
+        auto files = prepare_fonts(rooms);
+        if (files.size() != font["files"].size())
+            throw std::runtime_error("Prepared font set differs from the runtime.");
+        for (const auto &file : files) {
+            if (!font["files"].contains(file.first) ||
+                sha(file.second) != font["files"][file.first].get<std::string>())
+                throw std::runtime_error("Prepared font checksum failed.");
+            write_file(staging / fs::u8path(file.first),file.second);
+        }
+    }
     write_file(staging / "VoiceServer", payload(profile["worker"].get<std::string>()));
     progress("[3/4] Preparing and verifying speech...");
     prepare_pcm(archive, map, staging / "native-voice.pcm",

@@ -35,7 +35,12 @@ def cycles(key):
     if name == 'bra': return 10
     if name == 'bcc': return 10 if operands == 'taken' else 8 if operands == '2' else 12
     if name in ('moveq', 'swap'): return 4
-    if name in ('cmpi.w', 'andi.w'): return 8
+    if name in ('cmpi.w', 'cmpi.b', 'andi.w'): return 8
+    if name in ('tst.b','tst.w') and operands.startswith('d'): return 4
+    if name in ('subq.b','subq.w') and operands.split(',')[-1].strip().startswith('d'): return 4
+    if name in ('sub.b','sub.w','cmp.w'):
+        parts = [part.strip() for part in operands.split(',')]
+        if len(parts)==2 and all(len(part)==2 and part[0]=='d' and part[1].isdigit() for part in parts): return 4
     if name == 'ror.w' and operands.startswith('#$1,'): return 8
     if name in ('btst.l', 'btst.b') and operands == '#$0, d1': return 10
     if name.startswith(('move.', 'movea.')):
