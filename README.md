@@ -4,11 +4,17 @@ Add Ultimate Talkie speech to the original Amiga game, preserving its graphics a
 
 ## What you need
 
-- The original English Amiga game files, including `music.dat` and `sample.dat`.
-- The matching `Monkey_Island` executable or disk 1 ADF.
+- The complete original English Amiga game data in a folder, including `music.dat` and `sample.dat`. If starting from ADFs, extract the game data from **all disks** into that folder first.
+- The matching `Monkey_Island` executable. If it is missing from your folder, the builder can extract it from disk 1 ADF.
 - `monster.sou` from the English **Monkey Island Special Edition Ultimate Talkie**.
 
 The builder supports uncompressed `monster.sou` files. Compressed `.sog` and `.so3` files are not supported.
+
+## Get the builder
+
+Download the Windows or Linux builder from [GitHub Releases](https://github.com/segrax/Monkey-Island-Amiga-Talkie/releases). The latest `main` builds are also available as artifacts in [GitHub Actions](https://github.com/segrax/Monkey-Island-Amiga-Talkie/actions/workflows/build.yml).
+
+You can also [build it yourself from source](source/BUILDING.md#build-the-desktop-builder).
 
 ## Build and play
 
@@ -26,13 +32,14 @@ The generated `Play` script runs `MonkeyTalkie --skip-pirate-check` to skip the 
 
 The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
 
-## Amiga compatibility
+## Amiga requirements
 
-- PAL Amiga with Kickstart 1.3 or later and storage for the game.
-- A 68020 or faster is recommended. A 68000 at A500 speed cannot keep up with real-time playback.
-- Fast RAM is not required.
+- PAL Amiga with a 68000 CPU or better.
+- Kickstart 1.3 or later.
+- 1 MB Chip RAM and 512 KB Slow RAM. Fast RAM is not required.
+- 200 MB of free hard-drive space.
 
-Tested on a PAL A2000 with a TF536/68030, where it runs well. Also tested in an emulator with a 68020 and 1 MB Chip RAM, 1 MB Slow RAM and no Fast RAM. At A500 speed, some scenes slow down; A1200 speed or faster is recommended. Enable cycle-exact timing in the emulator: the opening scene slowed down with it disabled and ran smoothly with it enabled at 68020/A1200 speed.
+Tested on a PAL A2000 with a TF536/68030 and Kickstart 3.1; it runs well.
 
 ## Development and credits
 
