@@ -1,6 +1,6 @@
 # The Secret of Monkey Island: Amiga Talkie Edition
 
-Add Ultimate Talkie speech to the original Amiga game, preserving its graphics and all four music/SFX parts, with speech on both stereo outputs.
+A full-speech version of The Secret of Monkey Island for the Amiga, combining the original Amiga game with voices from Monkey Island Special Edition Ultimate Talkie.
 
 ## What you need
 
@@ -28,7 +28,7 @@ You can also [build it yourself from source](source/BUILDING.md#build-the-deskto
    Execute Play
    ```
 
-The generated `Play` script runs `MonkeyTalkie --skip-pirate-check` to skip the pirate-wheel screen. To show the screen, run `MonkeyTalkie` without the option instead.
+Run `MonkeyTalkie` normally, or `MonkeyTalkie --skip-pirate-check` to skip the pirate-wheel screen.
 
 The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
 
@@ -40,6 +40,8 @@ The finished game includes prepared speech audio, so you do not need to copy `mo
 - 200 MB of free hard-drive space.
 
 Tested on a PAL A2000 with a TF536/68030 and Kickstart 3.1; it runs well.
+
+NTSC intro and opening speech also tested in FS-UAE with a 68030 at 14.3 MHz, Kickstart 3.1, 1 MB Chip RAM and 1 MB Slow RAM, without Fast RAM.
 
 ## Development and credits
 

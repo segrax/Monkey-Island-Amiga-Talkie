@@ -43,3 +43,22 @@ preserved.
 For development, `MonkeyTalkie --boot-param=28` starts in the populated Scumm Bar.
 The normal startup path is unchanged. A guarded one-word correction also fixes
 an original PCM initialization clear through the wrong address register.
+
+## NTSC opening check (2026-11-04)
+
+The same runtime passed a focused FS-UAE opening check with a cycle-exact
+68030 at 14,318,180 Hz, Kickstart 3.1, 1 MiB Chip + 1 MiB Slow and no Fast
+RAM. The effective emulator log confirms NTSC at 60.0544 Hz. Intro and Lookout
+screens rendered correctly. All 21 observed speech generations reached the
+completed counter, and music returned to native playback. Speech underruns,
+transport resynchronisations and preparation refusals remained zero. Host
+audio telemetry recorded zero underruns across 7,181 completed frames.
+Read-only PCM-prefix comparisons found speech in both recorded stereo outputs.
+
+Evidence: local `build/validation/quiet23-030-ks31-ntsc-v3` contains configuration,
+screenshots, capture, waveform audit, counters and qualification report. The
+initial run stayed PAL despite `ntsc_mode`; only the repeat with effective UAE
+NTSC enabled counts as NTSC evidence. These checks cover the intro and opening
+conversation, not a full NTSC playthrough or physical NTSC hardware. No runtime
+changes were needed. The audio-prefix audit uses the NTSC Paula clock; exact
+PAL/NTSC pitch and script-timing parity were not established.
