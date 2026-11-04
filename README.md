@@ -9,6 +9,7 @@ A full-speech version of The Secret of Monkey Island for the Amiga, combining th
 - `monster.sou` from the English **Monkey Island Special Edition Ultimate Talkie**.
 
 The builder supports uncompressed `monster.sou` files. Compressed `.sog` and `.so3` files are not supported.
+The builder checks SHA-256 hashes against the [supported input files](source/assets/supported-inputs.json). Modified or cracked executables are not accepted unless they match the supported executable exactly. ADF images themselves do not need to match a particular hash; the executable extracted from disk 1 does.
 
 ## Get the builder
 
@@ -48,5 +49,3 @@ NTSC intro and opening speech also tested in FS-UAE with a 68030 at 14.3 MHz, Ki
 See [Building from source](source/BUILDING.md) for the C++ builder and native Amiga code.
 
 Speech comes from **Monkey Island Special Edition Ultimate Talkie**.
-
-[GPL-3.0-or-later](LICENSE) | [Third-party credits](source/THIRD-PARTY-NOTICES.md)
