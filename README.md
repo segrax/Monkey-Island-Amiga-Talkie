@@ -44,8 +44,6 @@ Tested on a PAL A2000 with a TF536/68030 and Kickstart 3.1; it runs well.
 
 NTSC intro and opening speech also tested in FS-UAE with a 68030 at 14.3 MHz, Kickstart 3.1, 1 MB Chip RAM and 1 MB Slow RAM, without Fast RAM.
 
-## Development and credits
+## Development
 
 See [Building from source](source/BUILDING.md) for the C++ builder and native Amiga code.
-
-Speech comes from **Monkey Island Special Edition Ultimate Talkie**.
