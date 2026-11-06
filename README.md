@@ -1,6 +1,6 @@
 # The Secret of Monkey Island: Amiga Talkie Edition
 
-A full-speech version of The Secret of Monkey Island for the Amiga, combining the original Amiga game with voices from Monkey Island Special Edition Ultimate Talkie.
+A full-speech version of The Secret of Monkey Island for the Amiga, combining the original Amiga game with voices from Monkey Island Special Edition Ultimate Talkie. Native audio and rendering optimisations are designed to make the speech-enabled game run on a 68000 Amiga without requiring a CPU accelerator.
 
 ## What you need
 
@@ -32,6 +32,35 @@ You can also [build it yourself from source](source/BUILDING.md#build-the-deskto
 Run `MonkeyTalkie` normally, or `MonkeyTalkie --skip-pirate-check` to skip the pirate-wheel screen.
 
 The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
+
+Existing output folders are preserved. If the default folder already exists, the
+interactive builder offers a numbered folder such as `Monkey_Island_Amiga_Talkie-2`.
+Failed builds clean up their temporary files. See [builder troubleshooting](source/BUILDING.md#builder-troubleshooting)
+if a build is interrupted or you need to retain files for debugging.
+
+## Native optimisations
+
+These optimisations target the original 68000 CPU, reducing audio and drawing
+work so the speech-enabled game can run without a CPU accelerator:
+
+- **Direct Paula music playback.** Between speech lines, all four music and
+  sound-effect parts play through the original hardware channels. During speech,
+  two channels mix music with centred voice while the other two remain native.
+  Direct playback resumes after the speech tail finishes.
+- **Prepared speech.** The desktop builder converts and verifies the speech
+  before you copy the game to the Amiga, avoiding VOC decoding during play.
+- **Cached graphics and text.** Prepared planar graphics, costume caches and
+  font drawing programs reduce repeated rendering work. The original drawing
+  paths remain available when a cache cannot be used.
+- **Less desktop memory use.** The Windows/Linux builder hashes the speech
+  archive in chunks and processes one recording at a time.
+
+In a matched quiet Scumm Bar test, the native-music changes reduced crossing time
+from about **4.2 to 3.1 seconds** on a cycle-exact PAL 68000 with 1 MB Chip RAM,
+1 MB Slow RAM and no Fast RAM. This measures one scene against the earlier
+hybrid driver; speed parity with the unmodified game is still unproven.
+Original script/frame caps and speech samples/rate are unchanged.
+See [validation results](source/VALIDATION.md) for the test conditions and limits.
 
 ## Amiga requirements
 

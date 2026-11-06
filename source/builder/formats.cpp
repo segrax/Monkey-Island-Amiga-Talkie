@@ -24,8 +24,19 @@ Json payload_json(const std::string &name) {
     auto bytes = payload(name);
     return Json::parse(bytes.begin(), bytes.end());
 }
-std::string sha(const Bytes &bytes) {
-    return picosha2::hash256_hex_string(bytes);
+std::string sha(const Bytes &bytes) { return picosha2::hash256_hex_string(bytes); }
+std::string compatibility_help() {
+    auto pins = payload_json("supported-inputs.json");
+    std::string help =
+        "Use the complete original English Amiga data and matching executable, "
+        "plus an uncompressed English Ultimate Talkie monster.sou.\nSupported speech profiles:\n";
+    for (const auto &profile : pins["profiles"])
+        help += "  " + profile["label"].get<std::string>() + " (" +
+                std::to_string(profile["source_bytes"].get<std::uint64_t>()) +
+                " bytes)\n    SHA-256: " + profile["source_sha256"].get<std::string>() + "\n";
+    return help +
+           "Compatibility: "
+           "https://github.com/segrax/Monkey-Island-Amiga-Talkie/blob/main/README.md#what-you-need";
 }
 std::string sha_file(const fs::path &path) {
     std::ifstream file(path, std::ios::binary);
@@ -102,9 +113,7 @@ static std::uint16_t le16(const Bytes &b, std::size_t at) {
     require(at <= b.size() && b.size() - at >= 2, "Truncated little-endian field.");
     return b[at] | (std::uint16_t(b[at + 1]) << 8);
 }
-static void append(Bytes &a, const Bytes &b) {
-    a.insert(a.end(), b.begin(), b.end());
-}
+static void append(Bytes &a, const Bytes &b) { a.insert(a.end(), b.begin(), b.end()); }
 static std::string lower(std::string text) {
     for (char &c : text)
         if (c >= 'A' && c <= 'Z')
@@ -143,7 +152,9 @@ Bytes original_engine(const fs::path &path, const std::string &expected) {
         }
     }
     throw std::runtime_error(
-        "Select the supported original Monkey_Island executable or original DOS0 disk 1 ADF.");
+        "Select the supported original Monkey_Island executable or original DOS0 disk 1 ADF.\n"
+        "Detected input SHA-256: " +
+        sha(data) + "\nExpected executable SHA-256: " + expected + "\n" + compatibility_help());
 }
 static Bytes base64(const std::string &text) {
     static const std::string alphabet =
@@ -205,7 +216,7 @@ Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t arc
     std::vector<Bytes> streams, suffixes;
     for (const auto &s : r["streams"]) {
         Bytes stream;
-        auto raw = rooms.at(s[0].get<std::string>());
+        const auto &raw = rooms.at(s[0].get<std::string>());
         auto x = s[1].get<unsigned>();
         for (auto v : raw) {
             unsigned b = v ^ x;
@@ -289,33 +300,55 @@ Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t arc
     return {std::move(output), std::vector<VoiceRef>(refs.begin(), refs.end()), entries.size(),
             omitted};
 }
-std::pair<std::size_t, std::size_t> voc(const Bytes &archive, VoiceRef ref) {
+using ReadRange = std::function<Bytes(std::size_t, std::size_t)>;
+static std::pair<std::size_t, std::size_t> voc_range(const ReadRange &read,
+                                                     std::size_t archive_size, VoiceRef ref) {
     std::size_t off = ref.offset, head = ref.header;
-    require(head >= 8 && head <= 132 && !(head & 1) && off <= archive.size() &&
-                archive.size() - off >= head + 32,
+    require(head >= 8 && head <= 132 && !(head & 1) && off <= archive_size &&
+                archive_size - off >= head + 32,
             "Invalid speech reference.");
-    require(std::memcmp(archive.data() + off, "VCTL", 4) == 0 && be32(archive, off + 4) == head,
+    auto control = read(off, 8);
+    require(std::memcmp(control.data(), "VCTL", 4) == 0 && be32(control, 4) == head,
             "VCTL reference mismatch.");
     auto start = off + head;
-    require(std::memcmp(archive.data() + start, "Creative Voice File\x1a", 20) == 0,
+    auto header = read(start, 26);
+    require(std::memcmp(header.data(), "Creative Voice File\x1a", 20) == 0,
             "Missing VOC signature.");
-    auto data = le16(archive, start + 20), version = le16(archive, start + 22),
-         checksum = le16(archive, start + 24);
+    auto data = le16(header, 20), version = le16(header, 22), checksum = le16(header, 24);
     require(data >= 26 && checksum == ((~version + 0x1234) & 65535), "Invalid VOC header.");
     auto block = start + data;
-    require(block <= archive.size() && archive.size() - block >= 6, "Truncated VOC block.");
-    unsigned length = archive[block + 1] | (unsigned(archive[block + 2]) << 8) |
-                      (unsigned(archive[block + 3]) << 16);
-    require(archive[block] == 1 && length >= 3 && archive[block + 4] == 0xd3 &&
-                archive[block + 5] == 0,
+    require(block <= archive_size && archive_size - block >= 6, "Truncated VOC block.");
+    auto sound = read(block, 6);
+    unsigned length = sound[1] | (unsigned(sound[2]) << 8) | (unsigned(sound[3]) << 16);
+    require(sound[0] == 1 && length >= 3 && sound[4] == 0xd3 && sound[5] == 0,
             "Expected 22050 Hz PCM8 VOC.");
     std::size_t size = length - 2, at = block + 6;
-    require(at < archive.size() && size < archive.size() - at && archive[at + size] == 0,
+    require(at < archive_size && size < archive_size - at && read(at + size, 1)[0] == 0,
             "Invalid VOC end.");
     return {at, size};
 }
-void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
+std::pair<std::size_t, std::size_t> voc(const Bytes &archive, VoiceRef ref) {
+    return voc_range(
+        [&](std::size_t at, std::size_t n) {
+            require(at <= archive.size() && n <= archive.size() - at, "Truncated speech archive.");
+            return Bytes(archive.begin() + at, archive.begin() + at + n);
+        },
+        archive.size(), ref);
+}
+void prepare_pcm(const fs::path &archive_path, const Map &map, const fs::path &path,
                  const std::string &expected) {
+    const auto archive_size = fs::file_size(archive_path);
+    require(archive_size <= std::numeric_limits<std::int32_t>::max(), "Unsupported file size.");
+    std::ifstream archive(archive_path, std::ios::binary);
+    require(bool(archive), "Cannot open speech archive: " + archive_path.u8string());
+    ReadRange read = [&](std::size_t at, std::size_t n) {
+        require(at <= archive_size && n <= archive_size - at, "Truncated speech archive.");
+        Bytes data(n);
+        archive.seekg(static_cast<std::streamoff>(at));
+        archive.read(reinterpret_cast<char *>(data.data()), static_cast<std::streamsize>(n));
+        require(bool(archive), "Speech archive read failed.");
+        return data;
+    };
     std::array<std::uint8_t, 256> table{};
     for (int i = 0; i < 256; ++i) {
         int s = i - 128, m = std::abs(s), limit = s < 0 ? 128 : 127,
@@ -334,10 +367,10 @@ void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
     };
     std::vector<Row> rows;
     for (auto ref : map.references) {
-        auto location = voc(archive, ref);
-        Bytes converted(location.second);
+        auto location = voc_range(read, archive_size, ref);
+        Bytes converted = read(location.first, location.second);
         for (std::size_t i = 0; i < converted.size(); ++i)
-            converted[i] = table[archive[location.first + i]];
+            converted[i] = table[converted[i]];
         auto pos = out.tellp();
         require(pos >= 0 && pos <= std::numeric_limits<std::int32_t>::max(),
                 "Speech output exceeds limit.");
@@ -354,7 +387,7 @@ void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
     h[7] = 128;
     std::uint32_t fields[] = {22050,
                               4,
-                              static_cast<std::uint32_t>(archive.size()),
+                              static_cast<std::uint32_t>(archive_size),
                               static_cast<std::uint32_t>(map.bytes.size()),
                               static_cast<std::uint32_t>(rows.size()),
                               128,
@@ -362,7 +395,7 @@ void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
                               static_cast<std::uint32_t>(size)};
     for (unsigned i = 0; i < 8; ++i)
         be32(h, 8 + 4 * i, fields[i]);
-    auto a = unhex(sha(archive)), b = unhex(sha(map.bytes));
+    auto a = unhex(sha_file(archive_path)), b = unhex(sha(map.bytes));
     std::copy(a.begin(), a.end(), h.begin() + 40);
     std::copy(b.begin(), b.end(), h.begin() + 72);
     out.seekp(0);
@@ -382,10 +415,10 @@ void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &path,
         Bytes check(r.size);
         out.read(reinterpret_cast<char *>(check.data()), check.size());
         require(bool(out), "Speech verification read failed.");
-        auto location = voc(archive, r.ref);
+        auto location = voc_range(read, archive_size, r.ref);
+        auto samples = read(location.first, location.second);
         for (std::size_t i = 0; i < check.size(); ++i)
-            require(check[i] == table[archive[location.first + i]],
-                    "Speech sample verification failed.");
+            require(check[i] == table[samples[i]], "Speech sample verification failed.");
     }
     out.close();
     require(sha_file(path) == expected, "Prepared speech checksum failed.");

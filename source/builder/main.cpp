@@ -1,5 +1,4 @@
 #include "builder.hpp"
-#include <chrono>
 #include <iostream>
 #include <portable-file-dialogs.h>
 #include <stdexcept>
@@ -33,6 +32,65 @@ std::string file(const std::string &label, const std::vector<std::string> &filte
         throw Cancelled{};
     return v.front();
 }
+talkie::Options interactive_options(bool gui) {
+    using namespace talkie;
+    auto amiga = folder("Select your English Amiga Monkey Island data folder (000.LFL, "
+                        "disk01.lec, music.dat)",
+                        gui);
+    auto sou = file("Select your Ultimate Talkie monster.sou",
+                    {"Speech archive", "monster.sou", "All files", "*"}, gui);
+    fs::path engine = fs::u8path(amiga) / "Monkey_Island";
+    if (!fs::is_regular_file(engine))
+        engine = fs::u8path(
+            file("Select the ORIGINAL Monkey_Island executable or original disk 1 ADF",
+                 {"Amiga executable or disk image", "Monkey_Island *.adf", "All files", "*"}, gui));
+    auto parent = folder("Choose where to create the finished Amiga game folder", gui);
+    fs::path output = fs::u8path(parent) / "Monkey_Island_Amiga_Talkie";
+    if (fs::exists(output)) {
+        unsigned version = 2;
+        do {
+            output = fs::u8path(parent) /
+                     fs::u8path("Monkey_Island_Amiga_Talkie-" + std::to_string(version++));
+        } while (fs::exists(output));
+        const auto message = "The default output folder already exists. Create " +
+                             output.filename().u8string() + "?";
+        if (gui) {
+            if (pfd::message(title, message, pfd::choice::yes_no, pfd::icon::question).result() !=
+                pfd::button::yes)
+                throw Cancelled{};
+        } else {
+            auto answer = ask(message + " [y/N]");
+            if (answer != "y" && answer != "Y")
+                throw Cancelled{};
+        }
+    }
+    return {fs::u8path(amiga), fs::u8path(sou), engine, output};
+}
+talkie::Options command_line_options(const std::vector<std::string> &args) {
+    using namespace talkie;
+    Options options;
+    std::map<std::string, std::string> flags;
+    for (std::size_t i = 0; i < args.size();) {
+        if (args[i] == "--keep-failed-build" && !options.keep_failed_build) {
+            options.keep_failed_build = true;
+            ++i;
+            continue;
+        }
+        if (i + 1 >= args.size() ||
+            (args[i] != "--amiga" && args[i] != "--sou" && args[i] != "--engine" &&
+             args[i] != "--output") ||
+            !flags.emplace(args[i], args[i + 1]).second)
+            throw std::runtime_error("Use --help for the four required options.");
+        i += 2;
+    }
+    if (flags.size() != 4)
+        throw std::runtime_error(
+            "Supply --amiga, --sou, --engine and --output, or run without arguments.");
+    return {fs::u8path(flags.at("--amiga")), fs::u8path(flags.at("--sou")),
+            fs::u8path(flags.at("--engine")), fs::u8path(flags.at("--output")),
+            options.keep_failed_build};
+}
+
 int run(const std::vector<std::string> &args) {
     using namespace talkie;
     bool interactive = args.empty(), gui = false;
@@ -40,10 +98,11 @@ int run(const std::vector<std::string> &args) {
         std::cout << title << "\nNative Amiga game builder\n\n";
         if (args == std::vector<std::string>{"--help"}) {
             std::cout << "Double-click or run without arguments to choose your local files.\n\n"
-                         "--amiga <folder> --sou <monster.sou> --engine <Monkey_Island or "
-                         "disk1.adf> --output <new-folder>\n"
-                         "--verify-payload   Verify embedded patch and runtime "
-                         "hashes.\n--self-test        Verify embedded data and binary format test "
+                         "--amiga <folder> --sou <monster.sou>\n"
+                         "--engine <Monkey_Island or disk1.adf> --output <new-folder>\n\n"
+                         "--keep-failed-build Retain staging files after errors for debugging.\n"
+                         "--verify-payload    Verify embedded patch and runtime "
+                         "hashes.\n--self-test         Verify embedded data and binary format test "
                          "vectors.\n";
             return 0;
         }
@@ -57,42 +116,9 @@ int run(const std::vector<std::string> &args) {
             std::cout << "Format and checksum tests OK.\n";
             return 0;
         }
-        Options options;
-        if (interactive) {
+        if (interactive)
             gui = pfd::settings::available();
-            auto amiga = folder("Select your English Amiga Monkey Island data folder (000.LFL, "
-                                "disk01.lec, music.dat)",
-                                gui);
-            auto sou = file("Select your Ultimate Talkie monster.sou",
-                            {"Speech archive", "monster.sou", "All files", "*"}, gui);
-            fs::path engine = fs::u8path(amiga) / "Monkey_Island";
-            if (!fs::is_regular_file(engine))
-                engine = fs::u8path(file(
-                    "Select the ORIGINAL Monkey_Island executable or original disk 1 ADF",
-                    {"Amiga executable or disk image", "Monkey_Island *.adf", "All files", "*"},
-                    gui));
-            auto parent = folder("Choose where to create the finished Amiga game folder", gui);
-            fs::path output = fs::u8path(parent) / "Monkey_Island_Amiga_Talkie";
-            if (fs::exists(output))
-                output += fs::u8path(
-                    "-" +
-                    std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
-            options = {fs::u8path(amiga), fs::u8path(sou), engine, output};
-        } else {
-            std::map<std::string, std::string> flags;
-            for (std::size_t i = 0; i < args.size(); i += 2) {
-                if (i + 1 >= args.size() ||
-                    (args[i] != "--amiga" && args[i] != "--sou" && args[i] != "--engine" &&
-                     args[i] != "--output") ||
-                    !flags.emplace(args[i], args[i + 1]).second)
-                    throw std::runtime_error("Use --help for the four required options.");
-            }
-            if (flags.size() != 4)
-                throw std::runtime_error(
-                    "Supply --amiga, --sou, --engine and --output, or run without arguments.");
-            options = {fs::u8path(flags.at("--amiga")), fs::u8path(flags.at("--sou")),
-                       fs::u8path(flags.at("--engine")), fs::u8path(flags.at("--output"))};
-        }
+        auto options = interactive ? interactive_options(gui) : command_line_options(args);
         auto summary =
             build(options, [](const std::string &message) { std::cout << message << std::endl; });
         std::cout << "\n" << summary << std::endl;
@@ -127,7 +153,5 @@ int wmain(int argc, wchar_t **argv) {
     return run(args);
 }
 #else
-int main(int argc, char **argv) {
-    return run(std::vector<std::string>(argv + 1, argv + argc));
-}
+int main(int argc, char **argv) { return run(std::vector<std::string>(argv + 1, argv + argc)); }
 #endif

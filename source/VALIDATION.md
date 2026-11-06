@@ -1,5 +1,17 @@
 # Validation
 
+## Builder lifecycle and streaming (2026-11-06)
+
+Windows MSVC Release and Linux GCC Release builds pass all three CTest targets:
+embedded payload verification, format self-tests, and the new builder lifecycle
+suite. The lifecycle suite uses synthetic speech and Unicode paths to test
+exception cleanup/retry, retained failures, output collisions, malformed staging,
+competing processes, forced termination/recovery, unsupported-input diagnostics,
+and streamed PCM generation against independently constructed expected bytes.
+Malformed and truncated speech inputs are rejected. Full supported-game builds,
+peak process memory and interactive folder dialogs were not measured in this
+check. Native Amiga runtime performance and hardware qualification are unchanged.
+
 ## Current runtime: native music between speech lines (2026-11-04)
 
 Engine: `2e0a21cdda321e4200b7267f58c545e9aaaaa7c2024ff26717cfda52129923fa`.

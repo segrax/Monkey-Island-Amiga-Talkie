@@ -47,7 +47,8 @@ manifest. `native/audio/worker` contains the `VoiceServer` source, and
 
 ## Build the desktop builder
 
-Install CMake 3.20+ and a C++17 compiler. From the repository root:
+Install CMake 3.20+, a C++17 compiler and Python 3.8+ for the automated tests.
+Python is not required to run the finished builder. From the repository root:
 
 ```powershell
 # Windows: Visual Studio C++ desktop tools
@@ -87,6 +88,27 @@ The workflows share `build-tools.yml` for the main-commit check, CMake builds, t
 Run `--help` or `--verify-payload` on either executable. Automated game builds accept `--amiga <folder> --sou <monster.sou> --engine <original-executable-or-disk1.adf> --output <new-folder>`.
 
 `tests/Smoke.ps1` and `tests/smoke.sh` exercise full builds and rejection paths with your owned inputs. See [VALIDATION.md](VALIDATION.md) for the bounded validation performed. The `--self-test` command checks embedded data and format vectors without game files.
+
+CTest also runs `builder_lifecycle`, using synthetic inputs and temporary Unicode
+paths. It checks exception cleanup and retry, optional retention, existing output
+preservation, malformed staging paths, competing processes, forced termination
+and explicit recovery, and streamed PCM bytes against an independent fixture.
+The speech archive is hashed in chunks and read one recording at a time; the
+Amiga room files remain in memory for dialogue, graphics and font preparation.
+Full supported-game output hashes still need the owned-input smoke tests.
+
+## Builder troubleshooting
+
+The builder writes to `<output>.building` and publishes the finished folder only
+after verification. Existing output folders are preserved, and errors clean up
+the temporary folder automatically. Command-line builds accept
+`--keep-failed-build` alongside the four input/output options to retain failed
+output for debugging.
+
+Forced termination or power loss can leave the temporary folder behind. The
+builder reports its path when you retry. After checking that no build is still
+running, move or remove that folder, or choose another output destination.
+The builder does not reuse it or remove another build's files.
 
 For the Amiga code, see [native/BUILDING.md](native/BUILDING.md). Its developer Python scripts are separate from the C++ application and are not required by end users.
 

@@ -19,6 +19,7 @@ const std::vector<Asset> &assets();
 Bytes payload(const std::string &name);
 Json payload_json(const std::string &name);
 std::string sha(const Bytes &data);
+std::string compatibility_help();
 std::string sha_file(const fs::path &path);
 Bytes read_file(const fs::path &path);
 void write_file(const fs::path &path, const Bytes &data);
@@ -41,10 +42,11 @@ Bytes original_engine(const fs::path &path, const std::string &expected);
 Bytes patch_engine(const Bytes &original);
 Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t archive_size);
 std::pair<std::size_t, std::size_t> voc(const Bytes &archive, VoiceRef reference);
-void prepare_pcm(const Bytes &archive, const Map &map, const fs::path &output,
+void prepare_pcm(const fs::path &archive, const Map &map, const fs::path &output,
                  const std::string &expected);
 struct Options {
     fs::path amiga, sou, engine, output;
+    bool keep_failed_build = false;
 };
 std::string build(const Options &options, const std::function<void(const std::string &)> &progress);
 void self_test();

@@ -1,9 +1,8 @@
 #include "builder.hpp"
-#include "planar.hpp"
 #include "glyphs.hpp"
+#include "planar.hpp"
+#include "staging.hpp"
 #include <algorithm>
-#include <chrono>
-#include <random>
 #include <sstream>
 #include <stdexcept>
 
@@ -54,7 +53,9 @@ std::string build(const Options &o, const std::function<void(const std::string &
             throw std::runtime_error("Missing Amiga file: " + it.key());
         auto data = read_file(found->second);
         if (sha(data) != it.value().get<std::string>())
-            throw std::runtime_error("Unsupported or damaged Amiga file: " + it.key());
+            throw std::runtime_error("Unsupported or damaged Amiga file: " + it.key() +
+                                     "\nDetected SHA-256: " + sha(data) + "\nExpected SHA-256: " +
+                                     it.value().get<std::string>() + "\n" + compatibility_help());
         rooms.emplace(it.key(), std::move(data));
     }
     progress("[1/4] Original Amiga files verified.");
@@ -66,8 +67,7 @@ std::string build(const Options &o, const std::function<void(const std::string &
     if (presence.size() != 8192 ||
         std::search(engine.begin(), engine.end(), presence.begin(), presence.end()) == engine.end())
         throw std::runtime_error("Engine and speech presence index differ.");
-    auto archive = read_file(o.sou);
-    auto archive_hash = sha(archive);
+    auto archive_hash = sha_file(o.sou);
     Json profile;
     for (const auto &candidate : pins["profiles"])
         if (candidate["source_sha256"] == archive_hash) {
@@ -75,21 +75,17 @@ std::string build(const Options &o, const std::function<void(const std::string &
             break;
         }
     if (profile.is_null())
-        throw std::runtime_error("Unsupported monster.sou. Select the uncompressed English "
-                                 "Ultimate Talkie archive listed in assets/supported-inputs.json.");
-    auto map = reconstruct_map(rooms, static_cast<std::uint32_t>(archive.size()));
+        throw std::runtime_error("Unsupported monster.sou.\nDetected SHA-256: " + archive_hash +
+                                 "\n" + compatibility_help());
+    auto map = reconstruct_map(rooms, static_cast<std::uint32_t>(fs::file_size(o.sou)));
     if (sha(map.bytes) != profile["map_sha256"].get<std::string>())
         throw std::runtime_error("Dialogue map checksum failed.");
     progress("[2/4] Hybrid engine and dialogue map verified.");
     // Publish only a verified, complete folder; do not replace installations.
-    fs::create_directories(output.parent_path());
-    std::random_device random;
-    auto staging = output;
-    staging +=
-        fs::u8path(".building-" + std::to_string(random()) + "-" +
-                   std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
-    if (!fs::create_directory(staging))
-        throw std::runtime_error("Cannot create a new build staging folder.");
+    StagingDirectory transaction(output, o.keep_failed_build);
+    const auto &staging = transaction.path();
+    if (o.keep_failed_build)
+        progress("Failed build files will be retained at: " + staging.u8string());
     fs::create_directory(staging / "Rooms");
     for (const auto &room : rooms)
         write_file(staging / "Rooms" / fs::u8path(room.first), room.second);
@@ -118,13 +114,12 @@ std::string build(const Options &o, const std::function<void(const std::string &
             if (!font["files"].contains(file.first) ||
                 sha(file.second) != font["files"][file.first].get<std::string>())
                 throw std::runtime_error("Prepared font checksum failed.");
-            write_file(staging / fs::u8path(file.first),file.second);
+            write_file(staging / fs::u8path(file.first), file.second);
         }
     }
     write_file(staging / "VoiceServer", payload(profile["worker"].get<std::string>()));
     progress("[3/4] Preparing and verifying speech...");
-    prepare_pcm(archive, map, staging / "native-voice.pcm",
-                profile["pcm_sha256"].get<std::string>());
+    prepare_pcm(o.sou, map, staging / "native-voice.pcm", profile["pcm_sha256"].get<std::string>());
     text_file(staging / "PreparedOnly", "NPC1\n");
     text_file(staging / "VoiceBoost", "4\n");
     const std::string command = "MonkeyTalkie --skip-pirate-check\n";
@@ -146,10 +141,7 @@ std::string build(const Options &o, const std::function<void(const std::string &
             manifest["files"][fs::relative(file.path(), staging).generic_u8string()] =
                 sha_file(file.path());
     text_file(staging / "build-manifest.json", manifest.dump(2) + "\n");
-    if (fs::exists(output))
-        throw std::runtime_error(
-            "Output appeared during the build; the verified .building folder was retained.");
-    fs::rename(staging, output);
+    transaction.publish();
     progress("[4/4] Finished. All output checksums passed.");
     std::string summary =
         "Created: " + output.u8string() +
