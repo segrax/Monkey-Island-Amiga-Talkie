@@ -95,6 +95,29 @@ Bytes unhex(const std::string &text) {
         out.push_back(static_cast<std::uint8_t>((digit(text[i]) << 4) | digit(text[i + 1])));
     return out;
 }
+Bytes patch_game_data(const Bytes &original, const Json &recipe) {
+    require(sha(original) == recipe.at("source_sha256").get<std::string>(),
+            "Pirate-wheel source checksum failed.");
+    auto result = original;
+    auto mask = recipe.at("xor").get<unsigned>();
+    require(mask <= 255, "Invalid pirate-wheel encoding.");
+    for (const auto &patch : recipe.at("patches")) {
+        auto offset = patch.at("offset").get<std::size_t>();
+        auto before = unhex(patch.at("expected").get<std::string>());
+        auto after = unhex(patch.at("replacement").get<std::string>());
+        require(before.size() == after.size() && offset <= result.size() &&
+                    before.size() <= result.size() - offset,
+                "Invalid pirate-wheel patch bounds.");
+        for (std::size_t i = 0; i < before.size(); ++i) {
+            require(result[offset + i] == (before[i] ^ mask),
+                    "Pirate-wheel script differs from the supported version.");
+            result[offset + i] = static_cast<std::uint8_t>(after[i] ^ mask);
+        }
+    }
+    require(sha(result) == recipe.at("sha256").get<std::string>(),
+            "Pirate-wheel output checksum failed.");
+    return result;
+}
 std::uint32_t be32(const Bytes &data, std::size_t at) {
     require(at <= data.size() && data.size() - at >= 4, "Truncated binary structure.");
     return (std::uint32_t(data[at]) << 24) | (std::uint32_t(data[at + 1]) << 16) |

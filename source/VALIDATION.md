@@ -74,3 +74,69 @@ NTSC enabled counts as NTSC evidence. These checks cover the intro and opening
 conversation, not a full NTSC playthrough or physical NTSC hardware. No runtime
 changes were needed. The audio-prefix audit uses the NTSC Paula clock; exact
 PAL/NTSC pitch and script-timing parity were not established.
+
+## Workbench launch and automatic pirate wheel (2026-11-08)
+
+The launcher now handles Workbench startup by opening a console and starting a
+CLI instance with a 64 KiB stack. This avoids the original game waiting for the
+Workbench startup message already consumed by the launcher's C runtime.
+The console remains open until Return is pressed after the game returns.
+
+Generated `Rooms/disk01.lec` has two fixed-size script edits: the Enter prompt
+advances after a delay, and the correct year enters one digit at a time. The
+original rendering, answer-string mutation, comparison and cleanup are retained.
+The engine binary, remaining room files, graphics and prepared audio are unchanged.
+
+Windows and Linux CTest each pass 5/5, including mocked Workbench directory,
+console and Shell startup paths and script-patch checksum/bounds rejection.
+A standalone Windows build with the standard speech profile passes the full
+owned-input smoke test, including the patched room checksum, generated-file
+hashes, existing-output preservation and bad-input rejection.
+
+`native/engine/core/test_pirate_wheel.py` checks that generated folder using the
+shipped 68000 VM in Unicorn: all 256 possible years (1506–1761) produce the
+expected five answer-string states (empty, then one through four digits), and
+the original comparison takes its success branch. It also checks the automated
+Enter wait and scripted delays. Rendering, input and timer scheduling are
+modeled; these changes have not yet been checked on a physical Amiga or in a
+full AmigaOS emulator session.
+
+## Voice worker startup diagnostics (2026-11-08)
+
+The loader now receives worker startup errors through an extended Workbench
+message, making profile, file, signal and ring-allocation failures visible in
+the launcher console. Ordinary Workbench/CLI worker launches still work without
+the extension. The ring prefers non-Chip memory and retries with any public
+memory when that allocation fails; Paula uses separate DMA buffers.
+
+Both speech-profile workers and the matched loader were rebuilt for 68000 and
+Kickstart 1.3. The new host regression checks cover extension size/magic guards,
+bounded error copying, preferred-memory success, Chip fallback and allocation
+failure. These checks do not establish the cause of the reported icon startup
+failure; an AmigaOS retry is needed to read its specific error.
+
+Windows and Linux CTest each pass 6/6. A fresh standalone Windows build with
+the standard speech profile passes the owned-input smoke test, including all
+generated-file hashes, existing-output preservation and invalid-input rejection.
+
+## Invisible mouse pointer correction (2026-11-08)
+
+The original pointer initializer allocates 96 cleared Chip bytes. Its invisible
+pointer starts at byte 72, leaving 24 blank bytes, but its SetPointer call
+requests a 16-row sprite requiring 72 bytes. Neighboring allocation contents
+can therefore appear as a stray cursor during the pirate screen and intro.
+The correction changes only the hidden-pointer dimensions at code offset
+`0x15130`: height 1, width 16, requiring 12 blank bytes. The visible gameplay
+cursor routine and its dimensions are unchanged.
+
+The 288-case native regression test executes the original and corrected hidden
+pointer routines plus the visible cursor routine on 68000, 68020 and 68030,
+with all 32 incoming CCR states. Nonzero neighboring memory reproduces the
+old out-of-bounds sprite; the corrected call remains blank and within the
+allocation. Patch footprint, repeated application and relocation overlap guards
+also pass. Intuition's SetPointer call is mocked; physical Amiga/AmigaOS visual
+verification remains outstanding.
+
+Both desktop builders pass 6/6 CTest checks. The fresh standard-profile output
+passes the owned-input smoke test and matches the corrected engine and matched
+launcher. The pirate-wheel VM regression still passes all 256 possible years.

@@ -87,11 +87,14 @@ std::string build(const Options &o, const std::function<void(const std::string &
     if (o.keep_failed_build)
         progress("Failed build files will be retained at: " + staging.u8string());
     fs::create_directory(staging / "Rooms");
+    const auto pirate = payload_json("patches/pirate-wheel.json");
     for (const auto &room : rooms)
-        write_file(staging / "Rooms" / fs::u8path(room.first), room.second);
+        write_file(staging / "Rooms" / fs::u8path(room.first),
+                   room.first == pirate["file"].get<std::string>()
+                       ? patch_game_data(room.second, pirate) : room.second);
     write_file(staging / "Monkey_Talkie", engine);
     write_file(staging / "amiga-talkie.dat", map.bytes);
-    for (const std::string name : {"MonkeyTalkie", "module.json"})
+    for (const std::string name : {"MonkeyTalkie", "MonkeyTalkie.info", "module.json"})
         write_file(staging / name, payload("runtime/" + name));
     auto runtime = payload_json("runtime/module.json");
     if (runtime.contains("engine_planar_cache")) {
@@ -122,7 +125,7 @@ std::string build(const Options &o, const std::function<void(const std::string &
     prepare_pcm(o.sou, map, staging / "native-voice.pcm", profile["pcm_sha256"].get<std::string>());
     text_file(staging / "PreparedOnly", "NPC1\n");
     text_file(staging / "VoiceBoost", "4\n");
-    const std::string command = "MonkeyTalkie --skip-pirate-check\n";
+    const std::string command = "Stack 65536\nMonkeyTalkie\n";
     text_file(staging / "Play", command);
     fs::create_directory(staging / "S");
     text_file(staging / "S" / "startup-sequence", command);

@@ -18,7 +18,44 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def build(output, candidate=False, stereo_mix=False, hybrid_mix=False, skip_fixture_tests=False, costume_cache=True, planar_cache=False, planar_chip_fallback=False, glyph_cache=False):
+def build(
+    output,
+    candidate=False,
+    stereo_mix=False,
+    hybrid_mix=False,
+    skip_fixture_tests=False,
+    costume_cache=True,
+    planar_cache=False,
+    planar_chip_fallback=False,
+    glyph_cache=False,
+):
+    if (stereo_mix or hybrid_mix) and not candidate:
+        raise ValueError('Mixing trials require --candidate')
+    if stereo_mix and hybrid_mix:
+        raise ValueError('Choose one mixing backend')
+
+    cache_enabled = hybrid_mix and costume_cache
+    if planar_cache and (not candidate or not cache_enabled):
+        raise ValueError('The planar prototype requires --candidate --hybrid-mix and the costume cache')
+    if glyph_cache and not (planar_cache and cache_enabled):
+        raise ValueError('The glyph cache requires --planar-cache --hybrid-mix and the costume cache')
+    if planar_chip_fallback and not planar_cache:
+        raise ValueError('The planar Chip fallback requires --planar-cache')
+
+    module_arguments = ['--with-metadata']
+    if hybrid_mix:
+        module_arguments.append('--hybrid-mix')
+    elif stereo_mix:
+        module_arguments.append('--stereo-mix')
+    for enabled, flag in (
+        (cache_enabled, '--costume-cache'),
+        (planar_cache, '--planar-cache'),
+        (planar_chip_fallback, '--planar-chip-fallback'),
+        (glyph_cache, '--glyph-cache'),
+    ):
+        if enabled:
+            module_arguments.append(flag)
+
     output = output.resolve()
     if not output.is_relative_to(PROJECT_ROOT / 'build') or output == PROJECT_ROOT / 'build' or output.exists():
         raise ValueError('Choose a new output directory beneath project build/')
@@ -27,22 +64,43 @@ def build(output, candidate=False, stereo_mix=False, hybrid_mix=False, skip_fixt
     with (output / 'build.log').open('w', encoding='utf-8') as log:
         def run(script, *arguments):
             command = [sys.executable, str(script), *map(str, arguments)]
-            log.write(' '.join(command) + '\n'); log.flush()
+            log.write(' '.join(command) + '\n')
+            log.flush()
             subprocess.run(command, env=env, cwd=PROJECT_ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
 
-        cache_enabled=hybrid_mix and costume_cache
-        if planar_cache and (not candidate or not cache_enabled):
-            raise ValueError('The planar prototype requires --candidate --hybrid-mix and the costume cache')
-        if glyph_cache and not (planar_cache and cache_enabled):
-            raise ValueError('The glyph cache requires --planar-cache --hybrid-mix and the costume cache')
-        if planar_chip_fallback and not planar_cache:
-            raise ValueError('The planar Chip fallback requires --planar-cache')
-        run(SOURCE / 'core/build_module.py', '--with-metadata', *(['--hybrid-mix'] if hybrid_mix else ['--stereo-mix'] if stereo_mix else []),
-            *(['--costume-cache'] if cache_enabled else []), *(['--planar-cache'] if planar_cache else []),
-            *(['--planar-chip-fallback'] if planar_chip_fallback else []), *(['--glyph-cache'] if glyph_cache else []))
+        run(SOURCE / 'core/build_module.py', *module_arguments)
         if hybrid_mix:
             run(PROJECT_ROOT / 'audio/test_boot_abi.py')
-            for test in ('test_clock_lifecycle.py', 'test_clock_preemption.py', 'test_music_clock.py', 'test_hybrid_driver.py', 'test_driver_clock_scale.py', 'test_transport_ownership.py', 'test_idle_zero_cache.py', 'test_presence.py', 'test_hybrid_tables.py', 'test_hybrid_speech_unity.py', 'test_speech_packed.py', 'test_hybrid_speech_only_unity.py', 'test_zero_output.py', 'test_resampler_boundaries.py', 'test_resampler_runs.py', 'test_fused_span.py', 'test_fused_driver.py', 'test_projected_span.py', 'test_gain32_span.py', 'test_projected_driver.py', 'test_irq_registers.py', 'test_phase_driver.py', 'test_timeline_equivalence.py', 'test_write_dispatch.py', 'test_volume_fast.py', 'test_word_wrapper.py', 'test_quiet_restart.py', 'test_quiet_prime.py'):
+            for test in (
+                'test_clock_lifecycle.py',
+                'test_clock_preemption.py',
+                'test_music_clock.py',
+                'test_hybrid_driver.py',
+                'test_driver_clock_scale.py',
+                'test_transport_ownership.py',
+                'test_idle_zero_cache.py',
+                'test_presence.py',
+                'test_hybrid_tables.py',
+                'test_hybrid_speech_unity.py',
+                'test_speech_packed.py',
+                'test_hybrid_speech_only_unity.py',
+                'test_zero_output.py',
+                'test_resampler_boundaries.py',
+                'test_resampler_runs.py',
+                'test_fused_span.py',
+                'test_fused_driver.py',
+                'test_projected_span.py',
+                'test_gain32_span.py',
+                'test_projected_driver.py',
+                'test_irq_registers.py',
+                'test_phase_driver.py',
+                'test_timeline_equivalence.py',
+                'test_write_dispatch.py',
+                'test_volume_fast.py',
+                'test_word_wrapper.py',
+                'test_quiet_restart.py',
+                'test_quiet_prime.py',
+            ):
                 run(SOURCE / 'core' / test)
         if planar_cache:
             run(SOURCE / 'art/test_checksum.py')
@@ -127,6 +185,8 @@ def build(output, candidate=False, stereo_mix=False, hybrid_mix=False, skip_fixt
         run(SOURCE / 'music_init/patch.py')
         run(SOURCE / 'music_init/test_patch.py')
         run(SOURCE / 'music_init/test_init_clear.py')
+        run(SOURCE / 'cursor/patch.py')
+        run(SOURCE / 'cursor/test_pointer.py')
         run(PROJECT_ROOT / 'audio/build_loader.py', '--module-dir', module,
             '--output-dir', module / 'loader-build')
         if skip_fixture_tests:
@@ -168,8 +228,20 @@ if __name__ == '__main__':
             parser.error('Mixing trials require --candidate')
         if args.stereo_mix and args.hybrid_mix:
             parser.error('Choose one mixing backend')
-        build(args.output, args.candidate, args.stereo_mix, args.hybrid_mix, args.skip_fixture_tests, not args.without_costume_cache, args.planar_cache, args.planar_chip_fallback, args.glyph_cache)
+        build(
+            args.output,
+            candidate=args.candidate,
+            stereo_mix=args.stereo_mix,
+            hybrid_mix=args.hybrid_mix,
+            skip_fixture_tests=args.skip_fixture_tests,
+            costume_cache=not args.without_costume_cache,
+            planar_cache=args.planar_cache,
+            planar_chip_fallback=args.planar_chip_fallback,
+            glyph_cache=args.glyph_cache,
+        )
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         print(str(error), file=sys.stderr)
-        print(f'Build log: {args.output / "build.log"}', file=sys.stderr)
+        log_path = args.output / 'build.log'
+        if log_path.is_file():
+            print(f'Build log: {log_path}', file=sys.stderr)
         raise SystemExit(1)

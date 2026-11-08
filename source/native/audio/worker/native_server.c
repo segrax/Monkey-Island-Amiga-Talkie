@@ -17,6 +17,15 @@
 #include <proto/dos.h>
 #include <stdio.h>
 #include <string.h>
+#include <workbench/startup.h>
+#include "worker_startup.h"
+#include "worker_memory.h"
+
+static struct NvWorkerStartup *startup_status;
+static void startup_error(const char *text) {
+	nv_startup_error(startup_status, text);
+	puts(text);
+}
 
 static struct NativeVoice voice;
 static struct NativePcm prebuilt;
@@ -219,6 +228,8 @@ int main(int argc, char **argv) {
 	const char *map_path = argc == 3 ? argv[1] : "amiga-talkie.dat";
 	const char *archive_path = argc == 3 ? argv[2] : "monster.sou";
 	struct DateStamp stamp;
+	startup_status = nv_worker_startup(argc, argv);
+	nv_startup_error(startup_status, "VoiceServer entered main but stopped during startup.");
 #ifdef NATIVE_DIAGNOSTIC
 	FILE *trace = fopen("voice-worker.log", "w");
 	if (trace) { fputs("main entered\n", trace); fflush(trace); }
@@ -229,11 +240,11 @@ int main(int argc, char **argv) {
 	}
 	prepared_only = native_profile_mode();
 	if (prepared_only < 0) {
-		puts("Invalid PreparedOnly marker; expected NPC1 newline.");
+		startup_error("Invalid PreparedOnly marker; expected NPC1 newline.");
 		return 20;
 	}
 	if (!native_profile_archive(prepared_only, archive_path, &archive, &archive_size)) {
-		puts("Original monster.sou unavailable; use a validated PreparedOnly profile explicitly.");
+		startup_error("Cannot open monster.sou. Prepared game folders must contain the PreparedOnly marker.");
 		return 20;
 	}
 
@@ -244,6 +255,7 @@ int main(int argc, char **argv) {
 	nv_policy_init(&policy, ((NvU32)stamp.ds_Days << 17) ^ ((NvU32)stamp.ds_Minute << 6) ^
 	               (NvU32)stamp.ds_Tick ^ (NvU32)FindTask(0));
 	if (!native_map_open_policy(&map, map_path, archive_size, &policy)) {
+		startup_error("Cannot load amiga-talkie.dat: missing/invalid map, wrong speech profile, or insufficient memory.");
 		if (archive) fclose(archive);
 		return 20;
 	}
@@ -257,7 +269,7 @@ int main(int argc, char **argv) {
 		int status;
 		if (prepared_only) {
 			if (!native_profile_gain(&gain)) {
-				puts("PreparedOnly supports VoiceBoost4 only; rebuild prepared PCM for another gain.");
+				startup_error("PreparedOnly supports VoiceBoost4 only; rebuild prepared PCM for another gain.");
 				goto close_files;
 			}
 		} else {
@@ -270,11 +282,11 @@ int main(int argc, char **argv) {
 		}
 		status = native_pcm_open(&prebuilt, "native-voice.pcm", gain, archive_size, map.file_bytes);
 		if (prepared_only && !native_profile_ready(prepared_only, status, gain, &prebuilt)) {
-			puts("PreparedOnly requires the complete matched native-voice.pcm and VoiceBoost4; no SOU fallback.");
+			startup_error("Cannot load matched native-voice.pcm: missing/incomplete file, wrong profile, or insufficient memory. VoiceBoost must be 4.");
 			goto close_files;
 		}
 		if (status < 0) {
-			puts("Invalid native-voice.pcm; rebuild the matched native PCM package.");
+			startup_error("Invalid native-voice.pcm or insufficient memory; rebuild the matched native PCM package.");
 			goto close_files;
 		}
 		metadata_prepare(&map, prepared_only, status, gain, &prebuilt);
@@ -284,8 +296,10 @@ int main(int argc, char **argv) {
 		else native_gain_table(amplified_pcm, (unsigned short)gain);
 	}
 	signal = AllocSignal(-1);
-	if (signal < 0)
+	if (signal < 0) {
+		startup_error("Cannot allocate a voice worker signal.");
 		goto close_files;
+	}
 	memset(&voice, 0, sizeof(voice));
 	voice.magic = NATIVE_VOICE_MAGIC;
 	voice.version = NATIVE_VOICE_VERSION;
@@ -295,9 +309,11 @@ int main(int argc, char **argv) {
 	voice.output_period = 161;
 	voice.worker_task = FindTask(0);
 	voice.signal_mask = 1UL << signal;
-	voice.pcm = AllocMem(NATIVE_VOICE_CAPACITY, MEMF_PUBLIC | MEMF_FAST | MEMF_CLEAR);
-	if (!voice.pcm)
+	voice.pcm = nv_alloc_voice_ring();
+	if (!voice.pcm) {
+		startup_error("Not enough memory for the 16 KiB voice ring (including Chip RAM fallback).");
 		goto free_signal;
+	}
 	memset(&port, 0, sizeof(port));
 	port.mp_Node.ln_Type = NT_MSGPORT;
 	port.mp_Node.ln_Name = NATIVE_SERVER_PORT;
@@ -309,6 +325,7 @@ int main(int argc, char **argv) {
 	Forbid();
 	if (FindPort(NATIVE_SERVER_PORT)) {
 		Permit();
+		startup_error("Another VoiceServer registered while this worker was starting.");
 		goto free_pcm;
 	}
 	AddPort(&port);

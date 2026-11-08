@@ -23,13 +23,24 @@ You can also [build it yourself from source](source/BUILDING.md#build-the-deskto
 2. Select your Amiga game folder, executable or disk 1 ADF, and `monster.sou`.
 3. Choose an output folder.
 4. Copy the finished folder to your Amiga.
-5. Open an Amiga Shell, change to that folder and run:
+   The folder includes the original Monkey Island Workbench icon for `MonkeyTalkie`.
+5. Double-click `MonkeyTalkie` to play. The pirate-wheel screen appears briefly,
+   automatically types the correct year, then continues into the game.
+   The launcher opens a Shell window and keeps its messages visible until you
+   press Return after the game exits. Alternatively, open an Amiga Shell,
+   change to that folder and run:
 
    ```text
    Execute Play
    ```
 
-Run `MonkeyTalkie` normally, or `MonkeyTalkie --skip-pirate-check` to skip the pirate-wheel screen.
+For a manual Shell launch, run `Stack 65536` first, then `MonkeyTalkie`.
+`Execute Play` also sets the stack. To skip the pirate-wheel screen entirely,
+run `MonkeyTalkie --skip-pirate-check`.
+
+If startup reports `Worker exited before initialization`, the next line gives
+the worker's failure reason. Copy `MonkeyTalkie` and `VoiceServer` from the same
+newly built output folder to get these diagnostics.
 
 The finished game includes prepared speech audio, so you do not need to copy `monster.sou` separately. See `VOICE-COVERAGE.txt` in the output folder for speech coverage.
 

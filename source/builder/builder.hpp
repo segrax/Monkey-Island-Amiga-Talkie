@@ -40,6 +40,7 @@ struct Map {
 };
 Bytes original_engine(const fs::path &path, const std::string &expected);
 Bytes patch_engine(const Bytes &original);
+Bytes patch_game_data(const Bytes &original, const Json &recipe);
 Map reconstruct_map(const std::map<std::string, Bytes> &rooms, std::uint32_t archive_size);
 std::pair<std::size_t, std::size_t> voc(const Bytes &archive, VoiceRef reference);
 void prepare_pcm(const fs::path &archive, const Map &map, const fs::path &output,

@@ -1,10 +1,12 @@
 {
-  "patches/engine.json": "d4f4b5347e9c581a90419ccb17a30fd7df0fc5e0b474cfe564b463786cc5330a",
+  "patches/engine.json": "9396370e55f9243c45618eff2ac7f0c71c22204adf9611b66b7b5479d4d0da1a",
   "patches/map-recipe.json": "01c49253a7daae110adfbb545cce35b2d0c2fd34b27e9b0d781e6f1ea0fd693a",
-  "runtime/module.json": "192db48730c7459ac7ea1bd3422fefbe79327d0efe2fa25a40e2747adac21f44",
-  "runtime/MonkeyTalkie": "7d7d0112df0e127a8b8f453c7e6f15ce053a0d9e7fca8bc7ebd7d2f8ca5eb39a",
-  "runtime/VoiceServer-expanded": "d873f91c6ba2b994178c9259d711f83eb0ce214ca31782974a0f2de9beeebbf5",
-  "runtime/VoiceServer-standard": "ceb871ba9aa7d4988ef20debb919a3ef57bd848579246dde4098b2f7d86838c5",
-  "supported-inputs.json": "face3f3c3d6382724ccf3dd55d67bfdd186d9b5fe434144e0061f164d21cd81d",
-  "patches/speech-presence.bin": "886d2c59ca2ed5e408cf1d3cdbdb2b1eaf53fe997a0e201ee9d10a46fd2d4050"
+  "runtime/module.json": "317cf20715dad7b29e22267d436e536094286106be87a8300020b9223d04e2d0",
+  "runtime/MonkeyTalkie": "5e3e7d53e5dd5e2a15ed5daac0bf266681c1460f72572cdebffad5fd5ed6bd00",
+  "runtime/MonkeyTalkie.info": "70eb8b553340bb6e9d7c094a0e072e9d9d1d13d59c3a3a37ab7c30c96d7a61a1",
+  "runtime/VoiceServer-expanded": "5cb487d22f176f6f3bc7501204819cf739c7493f77754e61ff6f70a5837ec384",
+  "runtime/VoiceServer-standard": "fa62e42c758d5a69debc9e1803b0bf781f1ba47b05d54f6b092153e3766083f0",
+  "supported-inputs.json": "f0dc18f3b2cc2dbc2c2db72d2c7db5fe0ec7a5fed880f4ade46ebbd3aaad0688",
+  "patches/speech-presence.bin": "886d2c59ca2ed5e408cf1d3cdbdb2b1eaf53fe997a0e201ee9d10a46fd2d4050",
+  "patches/pirate-wheel.json": "2815e702dfa60b66752a2169a1fcba08242a538d550987120aae864a5baf6def"
 }

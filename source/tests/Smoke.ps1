@@ -32,7 +32,11 @@ $module = Get-Content -LiteralPath (Join-Path $sourceRoot 'assets\runtime\module
 if ($module.PSObject.Properties['engine_planar_cache']) {
     Assert-Hash (Join-Path $output $module.engine_planar_cache.data_file) $module.engine_planar_cache.data_sha256
 }
-foreach ($room in $pins.rooms.PSObject.Properties) { Assert-Hash (Join-Path $output ('Rooms\' + $room.Name)) $room.Value }
+$pirate = Get-Content -LiteralPath (Join-Path $sourceRoot 'assets\patches\pirate-wheel.json') -Raw | ConvertFrom-Json
+foreach ($room in $pins.rooms.PSObject.Properties) {
+    $expected = if ($room.Name -ceq $pirate.file) { $pirate.sha256 } else { $room.Value }
+    Assert-Hash (Join-Path $output ('Rooms\' + $room.Name)) $expected
+}
 $manifest = Get-Content -LiteralPath (Join-Path $output 'build-manifest.json') -Raw | ConvertFrom-Json
 if (-not $manifest.complete) { throw 'Incomplete build manifest.' }
 foreach ($file in $manifest.files.PSObject.Properties) { Assert-Hash (Join-Path $output $file.Name) $file.Value }

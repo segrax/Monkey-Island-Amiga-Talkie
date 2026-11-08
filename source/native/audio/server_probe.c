@@ -7,6 +7,7 @@
 #include <proto/dos.h>
 #include <stdio.h>
 #include <string.h>
+#include "worker_startup.h"
 #ifndef NATIVE_GAME_LOADER
 #include "native_client.h"
 #include "persona_fixture.h"
@@ -14,13 +15,15 @@
 
 static struct MsgPort replies;
 static struct NativeSpeechMessage packet;
-static struct WBStartup startup;
+static struct NvWorkerStartup worker_startup;
+#define startup worker_startup.wb
 static struct WBArg argument;
 static struct MsgPort *server;
 
 #ifdef NATIVE_GAME_LOADER
 #include "native_driver.h"
 #include "module_exports.h"
+#include "workbench_launch.h"
 extern long call_game(__reg("a1") void *entry, __reg("a0") const char *args, __reg("d0") long length);
 static NvU32 loader_flags;
 static char game_args[8] = "\n";
@@ -57,8 +60,10 @@ static int run_game(void) {
 	unsigned int used, i;
 	NvU32 hash = 2166136261UL, total = 0;
 	FILE *image = fopen("Monkey_Talkie", "rb");
-	if (!image)
+	if (!image) {
+		puts("Cannot open Monkey_Talkie; run from the game folder.");
 		return 0;
+	}
 	while ((used = fread(bytes, 1, sizeof(bytes), image)) != 0) {
 		for (i = 0; i < used; ++i) {
 			hash ^= bytes[i];
@@ -242,6 +247,8 @@ int main(int argc, char **argv) {
 	int success = 0, attached = 0;
 #ifdef NATIVE_GAME_LOADER
 	int option;
+	if (argc == 0)
+		return launch_workbench((struct WBStartup *)argv);
 	for (option = 1; option < argc; ++option) {
 		if (!strcmp(argv[option], "--skip-pirate-check"))
 			loader_flags |= NV_CONTROL_SKIP_PIRATE_CHECK;
@@ -278,10 +285,16 @@ int main(int argc, char **argv) {
 	if (!segment)
 		goto finish;
 	argument.wa_Lock = DupLock(self->pr_CurrentDir);
+	if (self->pr_CurrentDir && !argument.wa_Lock) {
+		puts("Cannot duplicate the game directory lock.");
+		goto unload;
+	}
 	argument.wa_Name = "VoiceServer";
 	startup.sm_Message.mn_Node.ln_Type = NT_MESSAGE;
 	startup.sm_Message.mn_ReplyPort = &replies;
-	startup.sm_Message.mn_Length = sizeof(startup);
+	startup.sm_Message.mn_Length = sizeof(worker_startup);
+	worker_startup.magic = NV_STARTUP_MAGIC;
+	nv_startup_error(&worker_startup, "VoiceServer stopped before its main routine; check free memory and NIL:.");
 	startup.sm_Segment = segment;
 	startup.sm_NumArgs = 1;
 	startup.sm_ArgList = &argument;
@@ -295,6 +308,7 @@ int main(int argc, char **argv) {
 	while (!(server = FindPort(NATIVE_SERVER_PORT))) {
 		if (GetMsg(&replies)) {
 			puts("Worker exited before initialization");
+			puts(worker_startup.error);
 			goto unload;
 		}
 		Delay(1);

@@ -4,9 +4,9 @@
 
 The Windows and Linux builders embed this matched runtime:
 
-- Engine: `2e0a21cdda321e4200b7267f58c545e9aaaaa7c2024ff26717cfda52129923fa`
-- Loader: `7d7d0112df0e127a8b8f453c7e6f15ce053a0d9e7fca8bc7ebd7d2f8ca5eb39a`
-- Manifest: `192db48730c7459ac7ea1bd3422fefbe79327d0efe2fa25a40e2747adac21f44`
+- Engine: `10b92776bf9aac2f4d32f5a26eacc56c01c2ed802a9ef8b8d165a6439a0b543b`
+- Loader: `5e3e7d53e5dd5e2a15ed5daac0bf266681c1460f72572cdebffad5fd5ed6bd00`
+- Manifest: `317cf20715dad7b29e22267d436e536094286106be87a8300020b9223d04e2d0`
 
 The native build uses `--candidate --hybrid-mix --planar-cache --planar-chip-fallback --glyph-cache --skip-fixture-tests`.
 See [native/BUILDING.md](native/BUILDING.md) for the complete command and toolchain.
@@ -27,6 +27,13 @@ in [native/engine/art/FORMAT.md](native/engine/art/FORMAT.md). The builder also
 generates `native-font-2.dat` and `native-font-4.dat` from the selected game files.
 These font programs use the live palette and share the costume-cache allocation;
 costume drawing revokes them before that memory can be reused.
+
+The output copy of `Rooms/disk01.lec` contains two fixed-size pirate-wheel
+script patches: the initial Enter prompt advances automatically, and the
+correct year types itself before the original answer check continues the game.
+`assets/patches/pirate-wheel.json` pins the source bytes and output hash.
+The supplied game files are preserved. `--skip-pirate-check` still omits the
+screen completely when passed explicitly to `MonkeyTalkie`.
 
 All development files live here; the two runnable builders stay at the repository root.
 
